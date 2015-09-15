@@ -21,44 +21,44 @@
 // Please note, I'm not trying to criticize design proposed for homework, but rather demonstrate my design skills.  
 // P.S.: If it would be POC, then it should definitely be struct. 
 class DiaryRecord {
-	let creationDate: NSDate
-	var recordName = ""
-	var text = ""
-	var tags: [String] = []
+  let creationDate: NSDate
+  var recordName = ""
+  var text = ""
+  var tags: [String] = []
 
-	init() {
-		self.creationDate = NSDate.now()		// TODO: Find out how to get current data in Swift
-		
-		// While I have not feel good the language, it would be my first instinct in wiring initializers
-		// to always initialize **all** fields/properties of the class.
-		self.recordName = ""
-		self.text = ""
-		self.tags = []
-	}
+  init() {
+    self.creationDate = NSDate.now()        // TODO: Find out how to get current data in Swift
+    
+    // While I have not feel good the language, it would be my first instinct in wiring initializers
+    // to always initialize **all** fields/properties of the class.
+    self.recordName = ""
+    self.text = ""
+    self.tags = []
+  }
 
-	/////////////////////////////////////////////
-	// TODO: Add more descriptive initializers here
-	/////////////////////////////////////////////
+  /////////////////////////////////////////////
+  // TODO: Add more descriptive initializers here
+  /////////////////////////////////////////////
 
-	// TODO: Clarify requirement about date formatting. It probably should be some kind of localized 
-	// output but because of my laziness I did not do that.
-	func fullDescription() -> String {
-		return "\(self.creationDate)\n" +	// Hm, Swift does not have multi-line comments, but I still want to format such things in such a manner.
-			"\(self.recordName)\n" +
-			"\(self.text)\n" +
-			"\(getFormattedTags())\n";
-	}
+  // TODO: Clarify requirement about date formatting. It probably should be some kind of localized 
+  // output but because of my laziness I did not do that.
+  func fullDescription() -> String {
+    return "\(self.creationDate)\n" +   // Hm, Swift does not have multi-line comments, but I still want to format such things in such a manner.
+    "\(self.recordName)\n" +
+    "\(self.text)\n" +
+    "\(getFormattedTags())\n";
+  }
 
-	// TODO: Take a look at solution which cannot mutate neither string passed in parameter nor
-	// own state. Do not also forget about default copy-by-value semantics for string copying. 
-	func getFormattedTags() {
-		// TODO: Consider using Join method
-		var result_accumulator = ""
-		for tag in self.tags {
-			result_accumulator += "[\(tag)] "; 
-		}
-		return result_accumulator
-	}
+  // TODO: Take a look at solution which cannot mutate neither string passed in parameter nor
+  // own state. Do not also forget about default copy-by-value semantics for string copying. 
+  func getFormattedTags() {
+    // TODO: Consider using Join method
+    var result_accumulator = ""
+    for tag in self.tags {
+      result_accumulator += "[\(tag)] "; 
+    }
+    return result_accumulator
+  }
 }
 
 
