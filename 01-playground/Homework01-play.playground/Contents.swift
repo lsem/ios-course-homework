@@ -113,3 +113,8 @@ let recordWithTags = DiaryRecord(recordName: "First",
     withTags: ["жизнь", "боль", "swift", "strange"])
 println(recordWithTags.fullDescription())
 
+
+emptyRecord.text = "Just remembered to add text."
+println(emptyRecord.fullDescription())
+
+
