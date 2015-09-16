@@ -35,8 +35,7 @@ class DiaryRecord {
       self.tags?.insert(tag)
     }
   }
-  
-  
+    
   init (recordName: String) {
     self.recordName = recordName
   }
@@ -46,13 +45,6 @@ class DiaryRecord {
     self.text = text
   }
   
-  
-  /////////////////////////////////////////////
-  // TODO: Add more descriptive initializers here
-  /////////////////////////////////////////////
-  
-  // TODO: Clarify requirement about date formatting. It probably should be some kind of localized
-  // output but because of my laziness I did not do that.
   func fullDescription() -> String {
     var result = ""
     
@@ -102,12 +94,18 @@ class DiaryRecord {
     
     } // class DiaryRecord
 
-// Lets play with this
 
-let record = DiaryRecord()
-let s = record.fullDescription()
+    // Lets play with this
+
+    let record = DiaryRecord()
+    let s = record.fullDescription()
 
 
-let recordWithTags = DiaryRecord(recordName: "First", withText: "Started learning Swift. This inconvinient convinience constructors..", withTags: ["жизнь", "боль", "swift", "strange"])
+    let recordWithTags = DiaryRecord(recordName: "First", withText: "Started learning Swift. This inconvinient convinience constructors..", withTags: ["жизнь", "боль", "swift", "strange"])
 
-println(recordWithTags.fullDescription())
+    println(recordWithTags.fullDescription())
+
+
+
+
+
