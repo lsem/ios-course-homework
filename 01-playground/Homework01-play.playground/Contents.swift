@@ -92,20 +92,24 @@ class DiaryRecord {
       return result
     }
     
-    } // class DiaryRecord
+} // class DiaryRecord
 
 
-    // Lets play with this
+// Lets play with this
 
-    let record = DiaryRecord()
-    let s = record.fullDescription()
+let exampleText = "Started learning Swift. This inconvinient convinience constructors.."
 
+let emptyRecord = DiaryRecord()
+println(emptyRecord.fullDescription())
 
-    let recordWithTags = DiaryRecord(recordName: "First", withText: "Started learning Swift. This inconvinient convinience constructors..", withTags: ["жизнь", "боль", "swift", "strange"])
+let namedRecord = DiaryRecord(recordName: "First")
+println(namedRecord.fullDescription())
 
-    println(recordWithTags.fullDescription())
+let namedTextedRecord = DiaryRecord(recordName: "First", withText: exampleText)
+println(namedTextedRecord.fullDescription())
 
-
-
-
+let recordWithTags = DiaryRecord(recordName: "First",
+    withText: exampleText,
+    withTags: ["жизнь", "боль", "swift", "strange"])
+println(recordWithTags.fullDescription())
 
