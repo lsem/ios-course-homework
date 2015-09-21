@@ -17,6 +17,7 @@
 		5F8116A61BAEABEC00991688 /* DiaryAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8116A51BAEABEC00991688 /* DiaryAppUITests.swift */; };
 		5F8116B41BAED98500991688 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8116B31BAED98500991688 /* SettingsViewController.swift */; settings = {ASSET_TAGS = (); }; };
 		5FC4B7F01BAF4D1000051B1B /* README in Resources */ = {isa = PBXBuildFile; fileRef = 5FC4B7EF1BAF4D1000051B1B /* README */; settings = {ASSET_TAGS = (); }; };
+		5FF4697E1BB0475500B79CDF /* DiaryRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF4697D1BB0475500B79CDF /* DiaryRecord.swift */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +54,7 @@
 		5F8116A71BAEABEC00991688 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5F8116B31BAED98500991688 /* SettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		5FC4B7EF1BAF4D1000051B1B /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		5FF4697D1BB0475500B79CDF /* DiaryRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiaryRecord.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -112,6 +114,7 @@
 				5F8116911BAEABEC00991688 /* Info.plist */,
 				5F8116B31BAED98500991688 /* SettingsViewController.swift */,
 				5FC4B7EF1BAF4D1000051B1B /* README */,
+				5FF4697D1BB0475500B79CDF /* DiaryRecord.swift */,
 			);
 			path = DiaryApp;
 			sourceTree = "<group>";
@@ -267,6 +270,7 @@
 			files = (
 				5F8116881BAEABEC00991688 /* DetailViewController.swift in Sources */,
 				5F8116861BAEABEC00991688 /* MasterViewController.swift in Sources */,
+				5FF4697E1BB0475500B79CDF /* DiaryRecord.swift in Sources */,
 				5F8116841BAEABEC00991688 /* AppDelegate.swift in Sources */,
 				5F8116B41BAED98500991688 /* SettingsViewController.swift in Sources */,
 			);

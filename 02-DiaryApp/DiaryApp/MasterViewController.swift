@@ -53,7 +53,8 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
   
   func insertNewObject(sender: AnyObject) {
     NSLog("insert pressed");
-    objects.insert(NSDate(), atIndex: 0)
+    let newDiaryRecord = DiaryRecord()
+    objects.insert(newDiaryRecord, atIndex: 0)
     let indexPath = NSIndexPath(forRow: 0, inSection: 0)
     self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
   }
@@ -61,12 +62,11 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
   // MARK: - Segues
   
   override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-      NSLog("Navigation to segue \(segue.identifier)!!!")
     if segue.identifier == "showDetail" {
       if let indexPath = self.tableView.indexPathForSelectedRow {
-        let object = objects[indexPath.row] as! NSDate
+        let selectedDiaryRecord = objects[indexPath.row] as! DiaryRecord
         let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
-        controller.detailItem = object
+        controller.selectedDiaryRecord = selectedDiaryRecord
         controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
         controller.navigationItem.leftItemsSupplementBackButton = true
       }
@@ -98,10 +98,17 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
   
   override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
     let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
-    
-    let object = objects[indexPath.row] as! NSDate
-    cell.textLabel!.text = object.description
+    let diaryRecord = objects[indexPath.row] as! DiaryRecord
+    cell.textLabel!.text = formattedCellTextByDiaryRecord(diaryRecord)
     return cell
+  }
+  
+  func formattedCellTextByDiaryRecord(diaryRecord: DiaryRecord) -> String {
+    if let recordName = diaryRecord.recordName {
+      return recordName
+    } else {
+      return "Entry"
+    }
   }
   
   override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
