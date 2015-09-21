@@ -85,6 +85,7 @@
                     <navigationItem key="navigationItem" title="16 September" id="mOI-FS-AaM"/>
                     <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina47"/>
                     <connections>
+                        <outlet property="detailDescriptionLabel" destination="aBz-KC-Set" id="9nF-ex-vZv"/>
                         <outlet property="moodSegmentedControl" destination="6zw-21-gbG" id="uxB-aN-A7W"/>
                         <outlet property="textView" destination="ivf-Cl-UZd" id="6aZ-ld-3C8"/>
                     </connections>

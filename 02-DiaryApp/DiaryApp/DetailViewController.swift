@@ -36,15 +36,16 @@ class DetailViewController: UIViewController {
   }
   
   func configureView() {
-//    self.title = "Lala"
     // Update the user interface for the detail item.
     if let diaryRecord = self.selectedDiaryRecord {
       self.title = "\(diaryRecord.creationDate)"
       if let label = self.detailDescriptionLabel {
-        label.text = "fuck"
+        if let recordName = diaryRecord.recordName {
+          label.text = recordName
+        } else {
+          label.text = "New Entry"
+        }
       }
-    } else {
-      NSLog("no selected")
     }
   }
   
