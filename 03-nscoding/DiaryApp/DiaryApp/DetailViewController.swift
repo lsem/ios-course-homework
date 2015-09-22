@@ -32,8 +32,7 @@ class DetailViewController: UIViewController {
     }
   }
   
-  // Called once name editing finished
-  @IBAction func recordNameEditingDidEnd(sender: AnyObject) {
+  @IBAction func recordNameEditingChanged(sender: AnyObject) {
     if self.selectedDiaryRecord != nil && self.recordNameTextEdit.text != nil {
       self.selectedDiaryRecord!.name = self.recordNameTextEdit.text!
       NSNotificationCenter.defaultCenter().postNotificationName("ChangeDetail", object: self.selectedDiaryRecord!)

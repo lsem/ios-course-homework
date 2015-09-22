@@ -53,17 +53,6 @@
                                 <rect key="frame" x="20" y="158" width="335" height="1"/>
                                 <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                             </view>
-                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Example Name" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="hRw-uf-LKA">
-                                <rect key="frame" x="20" y="121" width="335" height="30"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="20"/>
-                                <textInputTraits key="textInputTraits"/>
-                                <connections>
-                                    <action selector="recordNameEditingDidEnd:" destination="JEX-9P-axG" eventType="editingDidEnd" id="mIr-Ah-Zy6"/>
-                                </connections>
-                            </textField>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="j8J-nG-pal">
-                                <rect key="frame" x="360" y="175" width="240" height="128"/>
-                            </imageView>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" translatesAutoresizingMaskIntoConstraints="NO" id="6zw-21-gbG" customClass="MoodSelectionSegementedControl" customModule="DiaryApp" customModuleProvider="target">
                                 <rect key="frame" x="88" y="76" width="199" height="29"/>
                                 <segments>
@@ -75,6 +64,19 @@
                                     <action selector="moodChanged:" destination="JEX-9P-axG" eventType="valueChanged" id="HYC-RP-ucA"/>
                                 </connections>
                             </segmentedControl>
+                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Example Name" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="hRw-uf-LKA">
+                                <rect key="frame" x="20" y="120" width="335" height="30"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="20"/>
+                                <textInputTraits key="textInputTraits"/>
+                                <connections>
+                                    <action selector="recordNameEditingChanged:" destination="JEX-9P-axG" eventType="editingChanged" id="hkZ-Rl-Cew"/>
+                                    <action selector="recordNameEditingDidEnd:" destination="JEX-9P-axG" eventType="editingDidEnd" id="mIr-Ah-Zy6"/>
+                                    <action selector="recordNameValueChanged:" destination="JEX-9P-axG" eventType="valueChanged" id="ifw-n8-rUC"/>
+                                </connections>
+                            </textField>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="j8J-nG-pal">
+                                <rect key="frame" x="360" y="175" width="240" height="128"/>
+                            </imageView>
                         </subviews>
                         <variation key="default">
                             <mask key="subviews">
