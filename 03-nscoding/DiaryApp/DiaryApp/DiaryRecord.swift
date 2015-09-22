@@ -34,7 +34,9 @@ class DiaryRecord : NSObject, NSCoding {
     self.text = text
     self.mood = mood
   }
+  // MARK: Printable
   
+  override var description: String { get { return "name: \(self.name); creationDate: \(self.creationDate)" } }
   // MARK: NSCoding
   
   required convenience init?(coder decoder: NSCoder) {

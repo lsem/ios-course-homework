@@ -15,6 +15,7 @@ protocol IDiaryRecordsRepository {
   func loadDiaryRecord() -> DiaryRecord
   func storeDiaryRecordCollection(records: [DiaryRecord]) -> Bool
   func loadDiaryRecordCollection() -> [DiaryRecord]?
+  func purgeAllData()
 }
 
 
@@ -22,13 +23,13 @@ protocol IDiaryRecordsRepository {
 // TODO: Make Error Handling
 // Repository for persisting application data to local filesystem
 class SystemKeyArchiverUnarchiverRepository : IDiaryRecordsRepository {
-  static let StoreFileFileSystemPath: String = SystemKeyArchiverUnarchiverRepository.allRecordsCollectionFilePath()
-
+  var storeFileFileSystemPath: String = SystemKeyArchiverUnarchiverRepository.allRecordsCollectionFilePath()
+  
   static func getDocumentsDirectoryPath() -> String {
     let paths = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory,
       NSSearchPathDomainMask.UserDomainMask, true)
     assert(!paths.isEmpty)
-    let documentsPath = paths[0]
+    let documentsPath = paths.first!
     return documentsPath
   }
 
@@ -37,7 +38,24 @@ class SystemKeyArchiverUnarchiverRepository : IDiaryRecordsRepository {
     let completePath = docsPathNS.stringByAppendingPathComponent("allDiaryRecordsCollection.archive")
     return completePath
   }
+  
+  static func allRecordsCollectionFileTestsPath() -> String {
+    let docsPathNS = NSString(string: SystemKeyArchiverUnarchiverRepository.getDocumentsDirectoryPath())
+    let completePath = docsPathNS.stringByAppendingPathComponent("allDiaryRecordsCollection_tests.archive")
+    return completePath
+  }
 
+  // The parameter forTests is an ad-hoc solution to adress the problem
+  // that after renunning unit tests, data written during the test is left.
+  // In testing mode alternative data file is which also is deleted at test end.
+  init(forTests testingMode: Bool = false) {
+    if testingMode {
+        self.storeFileFileSystemPath = SystemKeyArchiverUnarchiverRepository.allRecordsCollectionFileTestsPath()
+    } else {
+        self.storeFileFileSystemPath = SystemKeyArchiverUnarchiverRepository.allRecordsCollectionFilePath()
+    }
+  }
+  
   func storeDiaryRecord(record: DiaryRecord) {
     assert(false, "Not implemented")
   }
@@ -49,15 +67,25 @@ class SystemKeyArchiverUnarchiverRepository : IDiaryRecordsRepository {
   
   func storeDiaryRecordCollection(records: [DiaryRecord]) -> Bool {
     let result = NSKeyedArchiver.archiveRootObject(records,
-        toFile: SystemKeyArchiverUnarchiverRepository.StoreFileFileSystemPath)
+        toFile: self.storeFileFileSystemPath)
     return result
   }
   
   func loadDiaryRecordCollection() -> [DiaryRecord]? {
     let loadedRecords = NSKeyedUnarchiver.unarchiveObjectWithFile(
-        SystemKeyArchiverUnarchiverRepository.StoreFileFileSystemPath) as? [DiaryRecord]
+        self.storeFileFileSystemPath) as? [DiaryRecord]
     return loadedRecords
   }
+  
+  func purgeAllData() {
+    let fileManaeger = NSFileManager.defaultManager()
+    do {
+      try fileManaeger.removeItemAtPath(self.storeFileFileSystemPath)
+    } catch _ {
+      NSLog("ERROR: Failed removing data file")
+    }
+  }
+  
 }
 
 ////////////////////////////////////////////////////////////
@@ -80,5 +108,9 @@ class ICloudRepository : IDiaryRecordsRepository {
   func loadDiaryRecordCollection() -> [DiaryRecord]? {
     assert(false, "Not implemented")
     return [DiaryRecord]()
+  }
+  
+  func purgeAllData() {
+    assert(false, "Not implemented")
   }
 }

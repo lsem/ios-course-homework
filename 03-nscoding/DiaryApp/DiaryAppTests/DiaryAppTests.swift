@@ -23,6 +23,7 @@ class DiaryAppTests: XCTestCase {
   override func tearDown() {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     super.tearDown()
+    SystemKeyArchiverUnarchiverRepository(forTests: true).purgeAllData()
   }
   
   func test_Encoded_And_Decoded_DiaryRecord_Should_Be_Identical_To_Original() {
@@ -88,7 +89,7 @@ class DiaryAppTests: XCTestCase {
   func test_Storing_And_Loading_Array_Of_DiaryRecords_To_FileSystem_Should_Work() {
     // TODO: Introduce something like forAllRepositories( code ) to test all repositories
     let repositories: [IDiaryRecordsRepository] = [
-      SystemKeyArchiverUnarchiverRepository(),
+      SystemKeyArchiverUnarchiverRepository(forTests: true),
 //      ICloudRepository()
     ]
     let records: [DiaryRecord] = [
@@ -97,7 +98,7 @@ class DiaryAppTests: XCTestCase {
     ]
 
     for repository in repositories {
-      repository.storeDiaryRecordCollection(records)
+      XCTAssert(repository.storeDiaryRecordCollection(records))
       let loadedRecords  = repository.loadDiaryRecordCollection()
       XCTAssert(loadedRecords != nil, "Failed loading diaries collection for repository \(loadedRecords.dynamicType)")
       XCTAssert(loadedRecords!.count == records.count, "Loaded, but not enough")

@@ -12,14 +12,36 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDelegate {
   
   var window: UIWindow?
+  var diaryRecordsCollection: [DiaryRecord]?
+  var masterViewController: MasterViewController?
+  let repository = SystemKeyArchiverUnarchiverRepository()
   
   func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
     // Override point for customization after application launch.
+
+    becomeDetailViewControllerDelegate()
+    resolveMasterViewController()
+    loadDataIfThereAreAny()
+    provideDataToMasterController()
+    
+    return true
+  }
+  
+  func resolveMasterViewController() {
+    let splitViewController = self.window!.rootViewController as! UISplitViewController
+    let masterNavigationController = splitViewController.viewControllers[0] as! UINavigationController
+    self.masterViewController = masterNavigationController.viewControllers[0] as? MasterViewController
+  }
+  
+  func becomeDetailViewControllerDelegate() {
     let splitViewController = self.window!.rootViewController as! UISplitViewController
     let navigationController = splitViewController.viewControllers[splitViewController.viewControllers.count-1] as! UINavigationController
     navigationController.topViewController!.navigationItem.leftBarButtonItem = splitViewController.displayModeButtonItem()
     splitViewController.delegate = self
-    return true
+  }
+  
+  func provideDataToMasterController() {
+    self.masterViewController?.objects = self.diaryRecordsCollection!
   }
   
   func applicationWillResignActive(application: UIApplication) {
@@ -30,6 +52,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
   func applicationDidEnterBackground(application: UIApplication) {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+    storeDataIfNecessary()
   }
   
   func applicationWillEnterForeground(application: UIApplication) {
@@ -42,6 +65,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
   
   func applicationWillTerminate(application: UIApplication) {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+    storeDataIfNecessary()
+  }
+  
+  func storeDataIfNecessary() {
+    if let diaryRecordsCollection = self.diaryRecordsCollection {
+      self.repository.storeDiaryRecordCollection(diaryRecordsCollection)
+    }
+  }
+  
+  func loadDataIfThereAreAny() {
+    if let loadedData = self.repository.loadDiaryRecordCollection() {
+      self.diaryRecordsCollection = loadedData
+    } else {
+      // It could be either due to failed initialization or because of first run.
+      // Lets initialize with some hard coded.
+      // Alternativey, we could ask repository to get seed data, but this is out of scope for this MVP.
+      self.diaryRecordsCollection = [
+        DiaryRecord(name: "Finally", text: "Finally I almost done first home work..", mood: RecordMood.Good),
+        DiaryRecord(name: "Things getting better", text: "Trying to implement persistance", mood: RecordMood.Neutral),
+      ]
+      NSLog("Currenly data looks like: \(self.diaryRecordsCollection)")
+    }
   }
   
   // MARK: - Split view
