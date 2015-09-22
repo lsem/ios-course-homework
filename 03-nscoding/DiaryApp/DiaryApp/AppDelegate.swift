@@ -18,7 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
   
   func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
     // Override point for customization after application launch.
-
+    
     becomeDetailViewControllerDelegate()
     resolveMasterViewController()
     loadDataIfThereAreAny()
@@ -69,9 +69,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
   }
   
   func storeDataIfNecessary() {
-    if let diaryRecordsCollection = self.diaryRecordsCollection {
-      self.repository.storeDiaryRecordCollection(diaryRecordsCollection)
-    }
+    let masterDataCollection = self.masterViewController!.objects
+    self.repository.storeDiaryRecordCollection(masterDataCollection)
   }
   
   func loadDataIfThereAreAny() {
