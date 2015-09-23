@@ -13,10 +13,17 @@ import UIKit
 @testable import DiaryApp
 
 class DiaryAppTests: XCTestCase {
+  var repositories: [IDiaryRecordsRepository] = []
   
   override func setUp() {
     super.setUp()
     self.continueAfterFailure = false
+    SystemKeyArchiverUnarchiverRepository(forTests: true).purgeAllData()
+    self.repositories = [
+      SystemKeyArchiverUnarchiverRepository(forTests: true),
+      //      ICloudRepository()
+    ]
+    
     // Put setup code here. This method is called before the invocation of each test method in the class.
   }
   
@@ -88,19 +95,15 @@ class DiaryAppTests: XCTestCase {
   
   func test_Storing_And_Loading_Array_Of_DiaryRecords_To_FileSystem_Should_Work() {
     // TODO: Introduce something like forAllRepositories( code ) to test all repositories
-    let repositories: [IDiaryRecordsRepository] = [
-      SystemKeyArchiverUnarchiverRepository(forTests: true),
-//      ICloudRepository()
-    ]
     let records: [DiaryRecord] = [
       DiaryRecord(name: "Hapiness", text: "I'm just fool!", mood: RecordMood.Good),
       DiaryRecord(name: "Suffering", text: "Life is shit.", mood: RecordMood.Bad)
     ]
 
-    for repository in repositories {
+    for repository in self.repositories {
       XCTAssert(repository.storeDiaryRecordCollection(records))
       let loadedRecords  = repository.loadDiaryRecordCollection()
-      XCTAssert(loadedRecords != nil, "Failed loading diaries collection for repository \(loadedRecords.dynamicType)")
+      XCTAssert(loadedRecords != nil, "Failed loading diaries collection for repository \(repository.dynamicType)")
       XCTAssert(loadedRecords!.count == records.count, "Loaded, but not enough")
       for var ridx = 0; ridx < records.count; ++ridx {
         let originalRecord = records[ridx]
@@ -117,11 +120,37 @@ class DiaryAppTests: XCTestCase {
     XCTAssert(originalRecord.creationDate == loadedRecord.creationDate, "Mismatch in creationDate field for record " + recordName)
   }
 
-  // TODO: Verify it can store and load a lot of data, say 1_000_000 records
-  // TODO: Verify it can load/store one by one, to catch bugs caused by some kind of statefull internal model
+  func test_Application_Can_Store_Lot_Of_Data() {
+    let sampleRecord = DiaryRecord(name: "Hapiness", text: "I'm just fool!", mood: RecordMood.Good)
+
+    let aLotOfrecords = [DiaryRecord](count: (24*365*10), repeatedValue: sampleRecord)
+    for repository in self.repositories {
+      XCTAssertTrue(repository.storeDiaryRecordCollection(aLotOfrecords),
+        "Failed to store records for repository \(repository.dynamicType)")
+      let loadedData = repository.loadDiaryRecordCollection()
+      XCTAssert(loadedData != nil, "Failed to load previosuly saved data")
+      XCTAssertTrue(loadedData!.count == aLotOfrecords.count, "An amount of data loaded is less then was stored")
+      for (index, diaryRecord) in loadedData!.enumerate() {
+        let originalRecord = aLotOfrecords[index]
+        let restoredRecord = diaryRecord
+        assertAreRecordsEqual(originalRecord: originalRecord, loadedRecord: restoredRecord, recordName: "\(index)")
+      }
+    }
+  }
   
-  func test_Storing_And_Loading_Via_Abstract_Persistance_Subsystem_Should_Work() {
-    // ...
+  func test_ApplicationSettings_Can_Be_Saved_And_Resotred_From_DefaultsStorage() {
+    let appSettings = ApplicationSettings()
+    appSettings.naturalLanguageSupport = true
+    appSettings.showTimeAndDate = true
+    let appSettingsData: NSData? = NSKeyedArchiver.archivedDataWithRootObject(appSettings)
+    XCTAssert(appSettingsData != nil, "Failed to encode data")
+    NSUserDefaults.standardUserDefaults().setObject(appSettingsData, forKey: "appSettings")
+    let resotoredSettingsData: NSData? = NSUserDefaults.standardUserDefaults().objectForKey("appSettings") as? NSData
+    XCTAssert(resotoredSettingsData != nil, "Failed to restore data")
+    let restoredSettingsObject: ApplicationSettings? = NSKeyedUnarchiver.unarchiveObjectWithData(resotoredSettingsData!) as? ApplicationSettings
+    XCTAssert(restoredSettingsObject != nil, "Failed to decode restored data")
+    XCTAssert(restoredSettingsObject!.naturalLanguageSupport == true, "Mismatch in naturalLanguageSupport")
+    XCTAssert(restoredSettingsObject!.showTimeAndDate == true, "Mismatch in naturalLanguageSupport")
   }
   
   func testPerformanceExample() {

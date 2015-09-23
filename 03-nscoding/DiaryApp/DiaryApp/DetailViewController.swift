@@ -84,7 +84,7 @@ class DetailViewController: UIViewController, UITextViewDelegate {
       self.textView.text = selectedRecord.text
     }
   }
-    
+  
   // Mood related view configuration according to currently selected record
   func updateMoodUIState() {
     if let record = self.selectedDiaryRecord {
