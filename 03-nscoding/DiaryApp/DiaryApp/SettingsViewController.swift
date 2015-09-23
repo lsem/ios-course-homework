@@ -34,9 +34,9 @@ class SettingsViewController: UITableViewController, UINavigationBarDelegate {
   override func viewDidLoad() {
     // WARNING: Order metters here
     super.viewDidLoad()
-    self.setupDoneButton()
-    self.resolveUIConfiguration()
-    self.performInitialSetup()
+    setupDoneButton()
+    resolveUIConfiguration()
+    performInitialSetup()
   }
   
   override func didReceiveMemoryWarning() {
@@ -56,15 +56,14 @@ class SettingsViewController: UITableViewController, UINavigationBarDelegate {
       showTimeAndDate = ApplicationSettings.sharedInstance.showTimeAndDate
       naturalLanguageSupport = ApplicationSettings.sharedInstance.naturalLanguageSupport
     }
-    // TODO: It would be nice not to use DiaryRecordViewFormatter directly here but use formatter options instead
     assert(dateAndTimeIndexPath != nil, "Did you forget to call resolveUIConfiguration()?")
     assert(dateOnlyIndexPath != nil, "Did you forget to call resolveUIConfiguration()?")
     if showTimeAndDate {
-      self.unCheckCellAccessoryByIndexPath(self.dateOnlyIndexPath!)
-      self.checkCellAccessoryByIndexPath(self.dateAndTimeIndexPath!)
+      unCheckCellAccessoryByIndexPath(self.dateOnlyIndexPath!)
+      checkCellAccessoryByIndexPath(self.dateAndTimeIndexPath!)
     } else {
-      self.checkCellAccessoryByIndexPath(self.dateOnlyIndexPath!)
-      self.unCheckCellAccessoryByIndexPath(self.dateAndTimeIndexPath!)
+      checkCellAccessoryByIndexPath(self.dateOnlyIndexPath!)
+      unCheckCellAccessoryByIndexPath(self.dateAndTimeIndexPath!)
     }
     self.naturalLanguageSupportSwitch!.setOn(
       naturalLanguageSupport, animated: false)
@@ -140,20 +139,20 @@ class SettingsViewController: UITableViewController, UINavigationBarDelegate {
     assert(settingsControllerListener != nil, "Settings controller listener should exist at this moment")
     
     // Makes all clear, then check which was
-    self.deCheckAllRowsForSectionIndex(SettingsViewController.DateTimeFormatSectionIndex)
+    deCheckAllRowsForSectionIndex(SettingsViewController.DateTimeFormatSectionIndex)
     
     if self.dateAndTimeIndexPath == indexPath {
-      self.checkCellAccessoryByIndexPath(self.dateAndTimeIndexPath!)
+      checkCellAccessoryByIndexPath(self.dateAndTimeIndexPath!)
       ApplicationSettings.sharedInstance.showTimeAndDate = true
       self.settingsControllerListener!.settingsChanged()
     } else if self.dateOnlyIndexPath == indexPath {
-      self.checkCellAccessoryByIndexPath(self.dateOnlyIndexPath!)
+      checkCellAccessoryByIndexPath(self.dateOnlyIndexPath!)
       ApplicationSettings.sharedInstance.showTimeAndDate = false
       self.settingsControllerListener!.settingsChanged()
     }
   }
   
   override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-    self.processClickOnTableView(tableView, indexPath: indexPath)
+    processClickOnTableView(tableView, indexPath: indexPath)
   }
 }
