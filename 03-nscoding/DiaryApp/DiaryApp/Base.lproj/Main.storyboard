@@ -70,8 +70,6 @@
                                 <textInputTraits key="textInputTraits"/>
                                 <connections>
                                     <action selector="recordNameEditingChanged:" destination="JEX-9P-axG" eventType="editingChanged" id="hkZ-Rl-Cew"/>
-                                    <action selector="recordNameEditingDidEnd:" destination="JEX-9P-axG" eventType="editingDidEnd" id="mIr-Ah-Zy6"/>
-                                    <action selector="recordNameValueChanged:" destination="JEX-9P-axG" eventType="valueChanged" id="ifw-n8-rUC"/>
                                 </connections>
                             </textField>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="j8J-nG-pal">

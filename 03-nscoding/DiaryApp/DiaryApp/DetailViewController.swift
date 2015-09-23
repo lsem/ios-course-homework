@@ -8,7 +8,7 @@
 
 import UIKit
 
-class DetailViewController: UIViewController {
+class DetailViewController: UIViewController, UITextViewDelegate {
 
   static let SunnyMoodColor = UIColor(red: 1.0, green: 1.0, blue: 0.5, alpha: 1.0)
   static let RainyMoodColor = UIColor(red: 0.5, green: 1.0, blue: 0.5, alpha: 1.0)
@@ -35,8 +35,12 @@ class DetailViewController: UIViewController {
   @IBAction func recordNameEditingChanged(sender: AnyObject) {
     if self.selectedDiaryRecord != nil && self.recordNameTextEdit.text != nil {
       self.selectedDiaryRecord!.name = self.recordNameTextEdit.text!
-      NSNotificationCenter.defaultCenter().postNotificationName("ChangeDetail", object: self.selectedDiaryRecord!)
+      notifyMasterRecordChanged()
     }
+  }
+  
+  func notifyMasterRecordChanged() {
+      NSNotificationCenter.defaultCenter().postNotificationName("ChangeDetail", object: self.selectedDiaryRecord!)
   }
   
   // Called once segmented control (self.moodSegmentedControl) value is changed.
@@ -63,9 +67,11 @@ class DetailViewController: UIViewController {
       self.lastSelectedIndex = selectedIndex
       self.self.updateMoodUIState()
     }
+    notifyMasterRecordChanged()
   }
   
   func configureView() {
+    self.textView.delegate = self
     self.setupUIForSelectedDiaryRecord()
     self.updateMoodUIState()
   }
@@ -75,9 +81,10 @@ class DetailViewController: UIViewController {
     if let selectedRecord = self.selectedDiaryRecord {
       self.title = DiaryRecordViewFormatter.recordPageTitle(selectedRecord)
       self.recordNameTextEdit.text = DiaryRecordViewFormatter.recordNameEdit(selectedRecord)
+      self.textView.text = selectedRecord.text
     }
   }
-  
+    
   // Mood related view configuration according to currently selected record
   func updateMoodUIState() {
     if let record = self.selectedDiaryRecord {
@@ -119,5 +126,12 @@ class DetailViewController: UIViewController {
     super.didReceiveMemoryWarning()
     // Dispose of any resources that can be recreated.
   }
+  
+  // MARK: - UITextVideDelegate
+  func textViewDidChange(textView: UITextView) {
+    self.selectedDiaryRecord?.text = textView.text
+    notifyMasterRecordChanged()
+  }
+  
 }
 
