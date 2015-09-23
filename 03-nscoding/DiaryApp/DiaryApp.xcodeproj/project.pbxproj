@@ -18,7 +18,6 @@
 		5F8116B41BAED98500991688 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8116B31BAED98500991688 /* SettingsViewController.swift */; settings = {ASSET_TAGS = (); }; };
 		5F8F68E01BB0686F006A63AB /* DiaryRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8F68DF1BB0686F006A63AB /* DiaryRecord.swift */; settings = {ASSET_TAGS = (); }; };
 		5F8F68E21BB18258006A63AB /* MoodSelectionSegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8F68E11BB18258006A63AB /* MoodSelectionSegmentedControl.swift */; settings = {ASSET_TAGS = (); }; };
-		5F8F68E41BB1A686006A63AB /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8F68E31BB1A686006A63AB /* Constants.swift */; settings = {ASSET_TAGS = (); }; };
 		5F8F68E61BB1B20B006A63AB /* DiaryRecordFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8F68E51BB1B20B006A63AB /* DiaryRecordFormatter.swift */; settings = {ASSET_TAGS = (); }; };
 		5F8F68E81BB1CFE1006A63AB /* DiaryRecordsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8F68E71BB1CFE1006A63AB /* DiaryRecordsRepository.swift */; settings = {ASSET_TAGS = (); }; };
 		5FC4B7F01BAF4D1000051B1B /* README in Resources */ = {isa = PBXBuildFile; fileRef = 5FC4B7EF1BAF4D1000051B1B /* README */; settings = {ASSET_TAGS = (); }; };
@@ -62,7 +61,6 @@
 		5F8116B31BAED98500991688 /* SettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		5F8F68DF1BB0686F006A63AB /* DiaryRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiaryRecord.swift; sourceTree = "<group>"; };
 		5F8F68E11BB18258006A63AB /* MoodSelectionSegmentedControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MoodSelectionSegmentedControl.swift; sourceTree = "<group>"; };
-		5F8F68E31BB1A686006A63AB /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		5F8F68E51BB1B20B006A63AB /* DiaryRecordFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiaryRecordFormatter.swift; sourceTree = "<group>"; };
 		5F8F68E71BB1CFE1006A63AB /* DiaryRecordsRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiaryRecordsRepository.swift; sourceTree = "<group>"; };
 		5FC4B7EF1BAF4D1000051B1B /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
@@ -131,7 +129,6 @@
 				5FC4B7EF1BAF4D1000051B1B /* README */,
 				5F8F68DF1BB0686F006A63AB /* DiaryRecord.swift */,
 				5F8F68E11BB18258006A63AB /* MoodSelectionSegmentedControl.swift */,
-				5F8F68E31BB1A686006A63AB /* Constants.swift */,
 				5FED7B851BB2AB50001F2D90 /* ApplicationSettings.swift */,
 				5FED7B891BB2D8C7001F2D90 /* ApplicationSettingsExtensions.swift */,
 			);
@@ -305,7 +302,6 @@
 				5F8F68E01BB0686F006A63AB /* DiaryRecord.swift in Sources */,
 				5F8116841BAEABEC00991688 /* AppDelegate.swift in Sources */,
 				5FED7B8A1BB2D8C7001F2D90 /* ApplicationSettingsExtensions.swift in Sources */,
-				5F8F68E41BB1A686006A63AB /* Constants.swift in Sources */,
 				5F8F68E21BB18258006A63AB /* MoodSelectionSegmentedControl.swift in Sources */,
 				5F8116B41BAED98500991688 /* SettingsViewController.swift in Sources */,
 				5FED7B861BB2AB50001F2D90 /* ApplicationSettings.swift in Sources */,
