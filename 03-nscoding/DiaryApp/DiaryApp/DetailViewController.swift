@@ -79,8 +79,8 @@ class DetailViewController: UIViewController, UITextViewDelegate {
   // Keep here setting up UI elements for selected diary record
   func setupUIForSelectedDiaryRecord() {
     if let selectedRecord = self.selectedDiaryRecord {
-      self.title = DiaryRecordViewFormatter.recordPageTitle(selectedRecord)
-      self.recordNameTextEdit.text = DiaryRecordViewFormatter.recordNameEdit(selectedRecord)
+      self.title = DiaryRecordViewFormatter.sharedInstance.recordPageTitle(selectedRecord)
+      self.recordNameTextEdit.text = DiaryRecordViewFormatter.sharedInstance.recordNameEdit(selectedRecord)
       self.textView.text = selectedRecord.text
     }
   }

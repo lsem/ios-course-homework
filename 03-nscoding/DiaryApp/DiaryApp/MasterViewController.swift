@@ -43,6 +43,8 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
       let controllers = split.viewControllers
       self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
     }
+    
+    setupUIAccordingToAppConfiguration()
   }
   
   func configureApp(sender: AnyObject) {
@@ -89,19 +91,14 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
   }
   
   // MARK: - SettingsControllerListner
-  func naturalLanguageSupportConfigured(enabled: Bool) {
-    DiaryRecordViewFormatter.useRelativeDateFormatting = enabled
-    self.refreshRecordTable()
+  
+  func settingsChanged() {
+    setupUIAccordingToAppConfiguration()
+    refreshRecordTable()
   }
-
-  func dateTimeFormatChanged(format: DateTimeViewFormat) {
-    switch format {
-    case DateTimeViewFormat.DateAndTime:
-      DiaryRecordViewFormatter.showTime = true
-    case DateTimeViewFormat.DateOnly:
-      DiaryRecordViewFormatter.showTime = false
-    }
-    self.refreshRecordTable()
+  
+  func setupUIAccordingToAppConfiguration() {
+    DiaryRecordViewFormatter.sharedInstance.loadConfigurationFromApplicationSettings()
   }
   
   // MARK: - Table View
@@ -117,7 +114,7 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
   override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
     let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
     let selectedDiaryRecord = objects[indexPath.row]
-    let (title, subtitle) = DiaryRecordViewFormatter.recordMasterViewRow(selectedDiaryRecord)
+    let (title, subtitle) = DiaryRecordViewFormatter.sharedInstance.recordMasterViewRow(selectedDiaryRecord)
     cell.textLabel!.text = title
     cell.detailTextLabel!.text = subtitle
     return cell

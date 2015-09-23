@@ -8,44 +8,40 @@
 
 import Foundation
 
-
 // Encapsulated formatting needed for DiaryRecord representation in UI.
 // TODO: Move it to the UI related class.
 class DiaryRecordViewFormatter {
+  
+  static let sharedInstance = DiaryRecordViewFormatter()
+  
   static let DefaultShortenedEntryName = "New Entry"
-  static var useRelativeDateFormatting: Bool = Constants.UseRelativeDateFormatting {
+  let formatter: NSDateFormatter = NSDateFormatter()
+
+  var useRelativeDateFormatting = false {
     didSet {
-      formatter.doesRelativeDateFormatting = self.useRelativeDateFormatting
+      reconfigureItself()
     }
   }
-  static var showTime: Bool = Constants.ShowTime {
+  var showTime: Bool = false {
     didSet {
-      formatter.timeStyle = self.showTime == true ?
-        NSDateFormatterStyle.ShortStyle : NSDateFormatterStyle.NoStyle
+      reconfigureItself()
+    }
+  }
+
+  private func reconfigureItself() {
+    formatter.timeStyle = NSDateFormatterStyle.ShortStyle
+    formatter.dateStyle = NSDateFormatterStyle.ShortStyle
+    formatter.doesRelativeDateFormatting = self.useRelativeDateFormatting
+    if !self.showTime {
+        formatter.timeStyle = NSDateFormatterStyle.NoStyle
     }
   }
   
-  // TODO: Find out whether we can create 'static lazy' property instead if this
-  // hand-written approach.
-  static var _formatter: NSDateFormatter?
-  static var formatter: NSDateFormatter {
-    get {
-      if _formatter == nil {
-        _formatter = NSDateFormatter()
-        _formatter!.dateStyle = NSDateFormatterStyle.ShortStyle
-        _formatter!.timeStyle = Constants.ShowTime ? NSDateFormatterStyle.ShortStyle
-          : NSDateFormatterStyle.NoStyle
-        _formatter!.doesRelativeDateFormatting = Constants.UseRelativeDateFormatting
-      }
-      return _formatter!
-    }
-  }
-  
-  static func recordNameEdit(record: DiaryRecord) -> String {
+  func recordNameEdit(record: DiaryRecord) -> String {
     return record.name
   }
   
-  static func recordMasterViewRow(record: DiaryRecord) -> (String, String) {
+  func recordMasterViewRow(record: DiaryRecord) -> (String, String) {
     if !record.name.isEmpty {
       let dateString = formatter.stringFromDate(record.creationDate)
       return (record.name, dateString)
@@ -54,7 +50,7 @@ class DiaryRecordViewFormatter {
       formatter.stringFromDate(record.creationDate))
   }
   
-  static func recordPageTitle(record: DiaryRecord) -> String {
+  func recordPageTitle(record: DiaryRecord) -> String {
     let dateString = formatter.stringFromDate(record.creationDate)
     return dateString
   }

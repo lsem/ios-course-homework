@@ -10,8 +10,25 @@ import Foundation
 
 
 class ApplicationSettings : NSObject, NSCoding {
-  var naturalLanguageSupport: Bool = false
-  var showTimeAndDate: Bool = false
+  var saveOnEachMemberUpdate = true
+  
+  var naturalLanguageSupport: Bool = false {
+    didSet {
+      if saveOnEachMemberUpdate {
+        saveToLocalFileSystemStorage()
+      }
+    }
+  }
+  
+  var showTimeAndDate: Bool = false {
+    didSet {
+      if saveOnEachMemberUpdate {
+        saveToLocalFileSystemStorage()
+      }
+    }
+  }
+  
+  static let sharedInstance = ApplicationSettings()
   
   override init() {
     super.init()
@@ -34,7 +51,7 @@ class ApplicationSettings : NSObject, NSCoding {
   
   func encodeWithCoder(coder: NSCoder) {
     coder.encodeBool(self.naturalLanguageSupport, forKey: "naturalLanguageSupport")
-    coder.encodeBool(self.naturalLanguageSupport, forKey: "showTimeAndDate")
+    coder.encodeBool(self.showTimeAndDate, forKey: "showTimeAndDate")
   }
   
 }

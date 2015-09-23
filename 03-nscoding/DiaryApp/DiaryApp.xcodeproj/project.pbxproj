@@ -23,6 +23,8 @@
 		5F8F68E81BB1CFE1006A63AB /* DiaryRecordsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8F68E71BB1CFE1006A63AB /* DiaryRecordsRepository.swift */; settings = {ASSET_TAGS = (); }; };
 		5FC4B7F01BAF4D1000051B1B /* README in Resources */ = {isa = PBXBuildFile; fileRef = 5FC4B7EF1BAF4D1000051B1B /* README */; settings = {ASSET_TAGS = (); }; };
 		5FED7B861BB2AB50001F2D90 /* ApplicationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FED7B851BB2AB50001F2D90 /* ApplicationSettings.swift */; settings = {ASSET_TAGS = (); }; };
+		5FED7B881BB2D056001F2D90 /* DiaryRecordFormatterExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FED7B871BB2D056001F2D90 /* DiaryRecordFormatterExtensions.swift */; settings = {ASSET_TAGS = (); }; };
+		5FED7B8A1BB2D8C7001F2D90 /* ApplicationSettingsExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FED7B891BB2D8C7001F2D90 /* ApplicationSettingsExtensions.swift */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,6 +67,8 @@
 		5F8F68E71BB1CFE1006A63AB /* DiaryRecordsRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiaryRecordsRepository.swift; sourceTree = "<group>"; };
 		5FC4B7EF1BAF4D1000051B1B /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		5FED7B851BB2AB50001F2D90 /* ApplicationSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApplicationSettings.swift; sourceTree = "<group>"; };
+		5FED7B871BB2D056001F2D90 /* DiaryRecordFormatterExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiaryRecordFormatterExtensions.swift; sourceTree = "<group>"; };
+		5FED7B891BB2D8C7001F2D90 /* ApplicationSettingsExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApplicationSettingsExtensions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -129,6 +133,7 @@
 				5F8F68E11BB18258006A63AB /* MoodSelectionSegmentedControl.swift */,
 				5F8F68E31BB1A686006A63AB /* Constants.swift */,
 				5FED7B851BB2AB50001F2D90 /* ApplicationSettings.swift */,
+				5FED7B891BB2D8C7001F2D90 /* ApplicationSettingsExtensions.swift */,
 			);
 			path = DiaryApp;
 			sourceTree = "<group>";
@@ -154,6 +159,7 @@
 		5F8F68E91BB1E14B006A63AB /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				5FED7B871BB2D056001F2D90 /* DiaryRecordFormatterExtensions.swift */,
 				5F8F68E51BB1B20B006A63AB /* DiaryRecordFormatter.swift */,
 				5F8F68E71BB1CFE1006A63AB /* DiaryRecordsRepository.swift */,
 			);
@@ -293,10 +299,12 @@
 			files = (
 				5F8116881BAEABEC00991688 /* DetailViewController.swift in Sources */,
 				5F8F68E61BB1B20B006A63AB /* DiaryRecordFormatter.swift in Sources */,
+				5FED7B881BB2D056001F2D90 /* DiaryRecordFormatterExtensions.swift in Sources */,
 				5F8F68E81BB1CFE1006A63AB /* DiaryRecordsRepository.swift in Sources */,
 				5F8116861BAEABEC00991688 /* MasterViewController.swift in Sources */,
 				5F8F68E01BB0686F006A63AB /* DiaryRecord.swift in Sources */,
 				5F8116841BAEABEC00991688 /* AppDelegate.swift in Sources */,
+				5FED7B8A1BB2D8C7001F2D90 /* ApplicationSettingsExtensions.swift in Sources */,
 				5F8F68E41BB1A686006A63AB /* Constants.swift in Sources */,
 				5F8F68E21BB18258006A63AB /* MoodSelectionSegmentedControl.swift in Sources */,
 				5F8116B41BAED98500991688 /* SettingsViewController.swift in Sources */,

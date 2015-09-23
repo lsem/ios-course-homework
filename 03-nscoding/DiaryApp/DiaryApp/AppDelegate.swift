@@ -19,12 +19,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
   func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
     // Override point for customization after application launch.
     
+    loadApplicationConfiguration()
+    loadDataIfThereAreAny()
     becomeDetailViewControllerDelegate()
     resolveMasterViewController()
-    loadDataIfThereAreAny()
     provideDataToMasterController()
     
     return true
+  }
+  
+  func loadApplicationConfiguration() {
+    let instance = ApplicationSettings.sharedInstance
+    if !instance.loadFromLocalFileSystemStorage() {
+      instance.loadFactorySettings()
+    }
   }
   
   func resolveMasterViewController() {

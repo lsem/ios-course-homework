@@ -8,28 +8,11 @@
 
 import UIKit
 
-enum DateTimeViewFormat {
-  case DateOnly
-  case DateAndTime
-}
 
 // Provides boundary between settings page interface implementation and
 // application.
 protocol SettingsControllerListener : class {
-  var canNaturalLanguageBeSwithOn: Bool { get }
-  var canDateAndTimeBeSet: Bool  { get }
-  var canDateOnlyBeSet: Bool { get }
-  
-  func naturalLanguageSupportConfigured(enabled: Bool)
-  func dateTimeFormatChanged(format: DateTimeViewFormat)
-
-}
-
-// Can be used for settings which cannot be set
-extension SettingsControllerListener {
-  var canNaturalLanguageBeSwithOn: Bool { return true }
-  var canDateAndTimeBeSet: Bool  { return true}
-  var canDateOnlyBeSet: Bool { return true }
+  func settingsChanged()
 }
 
 class SettingsViewController: UITableViewController, UINavigationBarDelegate {
@@ -45,7 +28,6 @@ class SettingsViewController: UITableViewController, UINavigationBarDelegate {
   var dateOnlyIndexPath: NSIndexPath?
   var naturalLanguageSupportIndexPath: NSIndexPath?
   weak var settingsControllerListener: SettingsControllerListener?
-  var lastDateTimeFormatValue: DateTimeViewFormat?
   
   // MARK: - UIViewController
   
@@ -67,28 +49,25 @@ class SettingsViewController: UITableViewController, UINavigationBarDelegate {
   }
   
   func performInitialSetup() {
+    var showTimeAndDate = false
+    var naturalLanguageSupport = false
+    if ApplicationSettings.sharedInstance.loadFromLocalFileSystemStorage() {
+      NSLog("Settings (re)loaded")
+      showTimeAndDate = ApplicationSettings.sharedInstance.showTimeAndDate
+      naturalLanguageSupport = ApplicationSettings.sharedInstance.naturalLanguageSupport
+    }
     // TODO: It would be nice not to use DiaryRecordViewFormatter directly here but use formatter options instead
     assert(dateAndTimeIndexPath != nil, "Did you forget to call resolveUIConfiguration()?")
     assert(dateOnlyIndexPath != nil, "Did you forget to call resolveUIConfiguration()?")
-    if DiaryRecordViewFormatter.showTime {
+    if showTimeAndDate {
       self.unCheckCellAccessoryByIndexPath(self.dateOnlyIndexPath!)
       self.checkCellAccessoryByIndexPath(self.dateAndTimeIndexPath!)
-      self.updateViewFormat(DateTimeViewFormat.DateAndTime)
     } else {
       self.checkCellAccessoryByIndexPath(self.dateOnlyIndexPath!)
       self.unCheckCellAccessoryByIndexPath(self.dateAndTimeIndexPath!)
-      self.updateViewFormat(DateTimeViewFormat.DateOnly)
     }
     self.naturalLanguageSupportSwitch!.setOn(
-      DiaryRecordViewFormatter.useRelativeDateFormatting, animated: false)
-  }
-  
-  func updateViewFormat(newDateFormatValue: DateTimeViewFormat) {
-    assert(self.settingsControllerListener != nil, "Settings controller should be asssigned")
-    if self.lastDateTimeFormatValue != newDateFormatValue {
-      self.lastDateTimeFormatValue = newDateFormatValue
-      self.settingsControllerListener!.dateTimeFormatChanged(newDateFormatValue)
-    }
+      naturalLanguageSupport, animated: false)
   }
   
   // Makes all rows of specified section clear
@@ -136,10 +115,12 @@ class SettingsViewController: UITableViewController, UINavigationBarDelegate {
 
   // MARK: - Natural Language Support UISwitch
   @IBAction func naturalLanguageValueChanged(sender: AnyObject) {
-    let enabled = self.naturalLanguageSupportSwitch?.on
-    NSLog("Vallue changed!: \(enabled)")
-    assert(settingsControllerListener != nil, "Settings controller listener should exist at this moment")
-    self.settingsControllerListener!.naturalLanguageSupportConfigured(enabled!)
+    if let enabled = self.naturalLanguageSupportSwitch?.on {
+      assert(settingsControllerListener != nil, "Settings controller listener should exist at this moment")
+      ApplicationSettings.sharedInstance.naturalLanguageSupport = enabled
+      ApplicationSettings.sharedInstance.saveToLocalFileSystemStorage()      
+      self.settingsControllerListener!.settingsChanged()
+    }
   }
   
   // MARK: - TableViewDelegate
@@ -163,10 +144,12 @@ class SettingsViewController: UITableViewController, UINavigationBarDelegate {
     
     if self.dateAndTimeIndexPath == indexPath {
       self.checkCellAccessoryByIndexPath(self.dateAndTimeIndexPath!)
-      self.updateViewFormat(DateTimeViewFormat.DateAndTime)
+      ApplicationSettings.sharedInstance.showTimeAndDate = true
+      self.settingsControllerListener!.settingsChanged()
     } else if self.dateOnlyIndexPath == indexPath {
       self.checkCellAccessoryByIndexPath(self.dateOnlyIndexPath!)
-      self.updateViewFormat(DateTimeViewFormat.DateOnly)
+      ApplicationSettings.sharedInstance.showTimeAndDate = false
+      self.settingsControllerListener!.settingsChanged()
     }
   }
   
