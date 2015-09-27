@@ -40,10 +40,10 @@ class DataModel{
   func updateDiaryRecordAt(index index: Int, updateCb: (DiaryRecord) -> Void) {
     let ref = self.recordsCollection[index]
     let recordBeforeUpdate = DiaryRecord(name: ref.name, text: ref.text,
-      mood: ref.mood, creationDate: ref.creationDate)
+        mood: ref.mood, creationDate: ref.creationDate)
     
     updateCb(self.recordsCollection[index])
-
+    
     let recordAfterUpdate = self.recordsCollection[index]
     notifyRecordUpdated(recordBeforeUpdate, new: recordAfterUpdate)
   }
@@ -52,6 +52,14 @@ class DataModel{
   // after retrieving some data, one can assume indexes will not change (like sequential storage).
   func retrieveAllDiaryRecords() -> [DiaryRecord] {
     return recordsCollection
+  }
+  
+  func retrieveDiaryRecordAt(index index: Int) -> DiaryRecord? {
+    if index < self.recordsCollection.count {
+      let recordCopy = self.recordsCollection[index].copy() as? DiaryRecord
+      return  recordCopy
+    }
+    return nil
   }
   
   internal func notifyCollectionChange() {
@@ -155,7 +163,7 @@ class DataModelUIProxy : DataModelDelegate {
   func getErlierRecordAtIndex(index: Int) -> DiaryRecord {
     let index = getModelRecordIdByErlierRecordIndex(index)
     return self.dataModel.recordsCollection[index]
-  }
+  }  
   
   func retrieveErlierRecords() -> [DiaryRecord] {
     rebuildDateRecordsCacheIfNecessary()
@@ -278,8 +286,6 @@ class DataModelUIProxy : DataModelDelegate {
     // we should check whether date changed here!
     if old.creationDate != new.creationDate {
       self.cacheValid = false
-    } else {
-      NSLog("No need to rebuild indexes")
     }
   }
 }

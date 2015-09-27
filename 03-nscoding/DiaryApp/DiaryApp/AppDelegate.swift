@@ -68,8 +68,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
   }
   
   func storeDataIfNecessary() {
-    let masterDataCollection = self.masterViewController!.objects
-    self.repository.storeDiaryRecordCollection(masterDataCollection)
+    let allDiaryRecords = DataModel.sharedInstance.retrieveAllDiaryRecords()
+    self.repository.storeDiaryRecordCollection(allDiaryRecords)
   }
   
   func loadDataIfThereAreAny() {

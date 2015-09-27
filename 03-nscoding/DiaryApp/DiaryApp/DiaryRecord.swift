@@ -17,7 +17,7 @@ enum RecordMood : Int32 {
 
 // Represents diary record data. Should not contain any non-essential 
 // methods but only data.
-class DiaryRecord : NSObject, NSCoding {
+class DiaryRecord : NSObject, NSCoding, NSCopying {
   var creationDate: NSDate = NSDate()
   var name: String = ""
   var text: String = ""
@@ -34,6 +34,14 @@ class DiaryRecord : NSObject, NSCoding {
     self.text = text
     self.mood = mood
   }
+  
+  // MARK: - NSCopying
+  func copyWithZone(zone: NSZone) -> AnyObject {
+    let theCopy = DiaryRecord(name: self.name, text: self.text,
+      mood: self.mood, creationDate: self.creationDate)
+    return theCopy
+  }
+  
   // MARK: Printable
   
   override var description: String { get { return "name: \(self.name); creationDate: \(self.creationDate)" } }

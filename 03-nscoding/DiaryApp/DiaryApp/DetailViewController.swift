@@ -23,9 +23,25 @@ class DetailViewController: UIViewController, UITextViewDelegate, UITextFieldDel
   @IBOutlet weak var moodSegmentedControl: UISegmentedControl!
   @IBOutlet weak var recordNameTextEdit: UITextField!
   
-  var selectedDiaryRecord: DiaryRecord?
+  var recordModelId: Int = -1
   var lastSelectedIndex: Int = UISegmentedControlNoSegment
+  
+  var recordBeingEdited: DiaryRecord? { get {
+      if self.recordModelId != -1 {
+        let record = DataModel.sharedInstance.retrieveDiaryRecordAt(index: recordModelId)
+        return record
+      }
+      return nil
+    }
+  }
 
+  func updateEditedDiaryRecord(updateCb: (DiaryRecord) -> Void) {
+    DataModel.sharedInstance.updateDiaryRecordAt(index: self.recordModelId,
+        updateCb: { (record: DiaryRecord) -> Void in
+          updateCb(record)
+    })
+  }
+  
   var detailItem: AnyObject? {
     didSet {
       self.configureView()
@@ -38,14 +54,9 @@ class DetailViewController: UIViewController, UITextViewDelegate, UITextFieldDel
  
   
   @IBAction func recordNameEditingChanged(sender: AnyObject) {
-    if self.selectedDiaryRecord != nil && self.recordNameTextEdit.text != nil {
-      self.selectedDiaryRecord!.name = self.recordNameTextEdit.text!
-      notifyMasterRecordChanged()
+    if let newName = self.recordNameTextEdit.text {
+      updateEditedDiaryRecord() { $0.name = newName }
     }
-  }
-  
-  func notifyMasterRecordChanged() {
-      NSNotificationCenter.defaultCenter().postNotificationName("ChangeDetail", object: self.selectedDiaryRecord!)
   }
   
   func subscribeOnKeyaboadNotifications() {
@@ -159,18 +170,16 @@ class DetailViewController: UIViewController, UITextViewDelegate, UITextFieldDel
   @IBAction func moodChanged(sender: AnyObject) {
     let selectedIndex = self.moodSegmentedControl.selectedSegmentIndex
     if self.lastSelectedIndex == selectedIndex {
-      if let record = self.selectedDiaryRecord {
-        record.mood = RecordMood.NoSet
-        self.updateMoodUIState()
-      }
+      updateEditedDiaryRecord() { $0.mood = RecordMood.NoSet }
+      self.updateMoodUIState()
     } else {
       switch selectedIndex {
       case DetailViewController.SunnyMoodSegmentIndex:
-        self.selectedDiaryRecord?.mood = RecordMood.Good
+        updateEditedDiaryRecord() { $0.mood = RecordMood.Good }
       case DetailViewController.RainyMoodSegmentIndex:
-        self.selectedDiaryRecord?.mood = RecordMood.Bad
+        updateEditedDiaryRecord() { $0.mood = RecordMood.Bad }
       case DetailViewController.CloudyMoodSegmentIndex:
-        self.selectedDiaryRecord?.mood = RecordMood.Neutral
+        updateEditedDiaryRecord() { $0.mood = RecordMood.Neutral }
       case DetailViewController.NoSetMoodSegmentIndex:
         () // Do nothing here
       default:
@@ -179,7 +188,6 @@ class DetailViewController: UIViewController, UITextViewDelegate, UITextFieldDel
       self.lastSelectedIndex = selectedIndex
       self.self.updateMoodUIState()
     }
-    notifyMasterRecordChanged()
   }
   
   func configureView() {
@@ -190,7 +198,7 @@ class DetailViewController: UIViewController, UITextViewDelegate, UITextFieldDel
   
   // Keep here setting up UI elements for selected diary record
   func setupUIForSelectedDiaryRecord() {
-    if let selectedRecord = self.selectedDiaryRecord {
+    if let selectedRecord = self.recordBeingEdited {
       self.title = DiaryRecordViewFormatter.sharedInstance.recordPageTitle(selectedRecord)
       self.recordNameTextEdit.text = DiaryRecordViewFormatter.sharedInstance.recordNameEdit(selectedRecord)
       self.textView.text = selectedRecord.text
@@ -199,7 +207,7 @@ class DetailViewController: UIViewController, UITextViewDelegate, UITextFieldDel
   
   // Mood related view configuration according to currently selected record
   func updateMoodUIState() {
-    if let record = self.selectedDiaryRecord {
+    if let record = self.recordBeingEdited {
       switch(record.mood) {
       case .Neutral:
         self.view.backgroundColor = DetailViewController.CloudyMoodColor
@@ -244,9 +252,11 @@ class DetailViewController: UIViewController, UITextViewDelegate, UITextFieldDel
   
   // MARK: - UITextVideDelegate
   func textViewDidChange(textView: UITextView) {
-    self.selectedDiaryRecord?.text = textView.text
-    notifyMasterRecordChanged()
+    updateEditedDiaryRecord() {
+      $0.text = textView.text
+    }
   }
+  
   
 }
 

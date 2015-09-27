@@ -15,7 +15,6 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
   static let ErlierRecordsTableSectionIndex = 1
   
   var detailViewController: DetailViewController? = nil
-  var objects = [DiaryRecord]()
   var settingsViewController: SettingsViewController?
   let dataModelProxy: DataModelUIProxy = DataModelUIProxy(dataModel: DataModel.sharedInstance)
   
@@ -56,6 +55,7 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
   override func viewWillAppear(animated: Bool) {
     self.clearsSelectionOnViewWillAppear = self.splitViewController!.collapsed
     super.viewWillAppear(animated)
+    refreshRecordTable()
   }
   
   override func didReceiveMemoryWarning() {
@@ -78,18 +78,11 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
   override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
     if segue.identifier == "showDetail" {
       if let indexPath = self.tableView.indexPathForSelectedRow {
-        let selectedRowCategory = decodeRecordCategoryForSection(indexPath.section)
-        var selectedRecordObject: DiaryRecord? = nil
-        switch selectedRowCategory {
-        case .Today: selectedRecordObject = self.dataModelProxy.getTodayRecordAtIndex(indexPath.row)
-        case .ThisWeek: selectedRecordObject = self.dataModelProxy.getThisWeelRecordAtIndex(indexPath.row)
-        case .Erlier: selectedRecordObject = self.dataModelProxy.getErlierRecordAtIndex(indexPath.row)
-        }
-      
-        let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
-        controller.selectedDiaryRecord = selectedRecordObject!
-        controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
-        controller.navigationItem.leftItemsSupplementBackButton = true
+        let recordModelId = getDataRecordModelIdForIndexPath(indexPath)
+        let detailController = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
+        detailController.recordModelId = recordModelId
+        detailController.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
+        detailController.navigationItem.leftItemsSupplementBackButton = true
       }
     } else if segue.identifier == "showSettings" {
       let settingsNavigationController = (segue.destinationViewController as! UINavigationController).topViewController
@@ -152,12 +145,21 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
     }
   }
   
-  override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-    let record = getDataRecordForIndexPath(indexPath)
-    let emptyRecordFixedHeight = CGFloat(50.0)
-    let nonEmptyRecordFixedHeight = CGFloat(100.0)
-    return record.text.isEmpty ? emptyRecordFixedHeight : nonEmptyRecordFixedHeight
+  func getDataRecordModelIdForIndexPath(indexPath: NSIndexPath) -> Int {
+    let category = decodeRecordCategoryForSection(indexPath.section)
+    switch category {
+    case .Today: return self.dataModelProxy.getModelRecordIdByTodayRecordIndex(indexPath.row)
+    case .ThisWeek: return self.dataModelProxy.getModelRecordIdByThisWeekRecordIndex(indexPath.row)
+    case .Erlier: return self.dataModelProxy.getModelRecordIdByErlierRecordIndex(indexPath.row)
+    }
   }
+
+//  override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+//    let record = getDataRecordForIndexPath(indexPath)
+//    let emptyRecordFixedHeight = CGFloat(50.0)
+//    let nonEmptyRecordFixedHeight = CGFloat(100.0)
+//    return record.text.isEmpty ? emptyRecordFixedHeight : nonEmptyRecordFixedHeight
+//  }
   
   override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
     var sectionsCount = 0
@@ -215,10 +217,27 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
     return true
   }
   
+  func isSectionAboutToBeEmpty(section: Int) -> Bool {
+    let category = decodeRecordCategoryForSection(section)
+    switch category {
+    case .Today: return self.dataModelProxy.todayRecordsCount == 1
+    case .ThisWeek: return self.dataModelProxy.thisWeekRecordsCount == 1
+    case .Erlier: return self.dataModelProxy.erlierRecordsCount == 1
+    }
+  }
+  
   override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
     if editingStyle == .Delete {
-      objects.removeAtIndex(indexPath.row)
-      tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+      // This is disgusting..
+      let recordId = getDataRecordModelIdForIndexPath(indexPath)
+      if isSectionAboutToBeEmpty(indexPath.section) {
+        DataModel.sharedInstance.removeDiaryRecordAt(index: recordId)
+        let indexset = NSIndexSet(index: indexPath.section)
+        tableView.deleteSections(indexset, withRowAnimation: .Fade)
+      } else {
+        DataModel.sharedInstance.removeDiaryRecordAt(index: recordId)
+        tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+      }
     } else if editingStyle == .Insert {
       // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view.
     }
