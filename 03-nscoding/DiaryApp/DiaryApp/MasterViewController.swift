@@ -143,20 +143,20 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
     }
   }
   
-  override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+  func getDataRecordForIndexPath(indexPath: NSIndexPath) -> DiaryRecord {
     let category = decodeRecordCategoryForSection(indexPath.section)
-    var record: DiaryRecord? = nil
     switch category {
-    case .Today:
-      record = self.dataModelProxy.getTodayRecordAtIndex(indexPath.row)
-    case .ThisWeek:
-      record = self.dataModelProxy.getThisWeelRecordAtIndex(indexPath.row)
-    case .Erlier:
-      record = self.dataModelProxy.getErlierRecordAtIndex(indexPath.row)
+    case .Today: return self.dataModelProxy.getTodayRecordAtIndex(indexPath.row)
+    case .ThisWeek: return self.dataModelProxy.getThisWeelRecordAtIndex(indexPath.row)
+    case .Erlier: return self.dataModelProxy.getErlierRecordAtIndex(indexPath.row)
     }
+  }
+  
+  override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    let record = getDataRecordForIndexPath(indexPath)
     let emptyRecordFixedHeight = CGFloat(50.0)
     let nonEmptyRecordFixedHeight = CGFloat(100.0)
-    return record!.text.isEmpty ? emptyRecordFixedHeight : nonEmptyRecordFixedHeight
+    return record.text.isEmpty ? emptyRecordFixedHeight : nonEmptyRecordFixedHeight
   }
   
   override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
@@ -206,19 +206,8 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
   
   override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
     let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
-
-    let category = decodeRecordCategoryForSection(indexPath.section)
-    switch category {
-    case .Today:
-      let record = dataModelProxy.getTodayRecordAtIndex(indexPath.row)
-      return prepareCell(cell, forRecord: record)
-    case .ThisWeek:
-      let record = dataModelProxy.getThisWeelRecordAtIndex(indexPath.row)
-      return prepareCell(cell, forRecord: record)
-    case .Erlier:
-      let record = dataModelProxy.getErlierRecordAtIndex(indexPath.row)
-      return prepareCell(cell, forRecord: record)
-    }
+    let record = getDataRecordForIndexPath(indexPath)
+    return prepareCell(cell, forRecord: record)
   }
   
   override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {

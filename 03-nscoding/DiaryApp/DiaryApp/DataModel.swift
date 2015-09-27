@@ -259,7 +259,7 @@ class DataModelUIProxy : DataModelDelegate {
   func buildSortedOrderedIndex() {
     var dataRecords = self.dataModel.retrieveAllDiaryRecords()
     self.dateOrderedIndexData = Array<Int>(count: dataRecords.count, repeatedValue: 0)
-    for var index = 0; index != self.dateOrderedIndexData.count; ++index {
+    for index in 0..<self.dateOrderedIndexData.count {
       self.dateOrderedIndexData[index] = index
     }
     self.dateOrderedIndexData.sortInPlace({

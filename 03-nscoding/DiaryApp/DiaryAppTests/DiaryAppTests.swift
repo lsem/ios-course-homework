@@ -156,7 +156,7 @@ class DiaryAppTests: XCTestCase {
   // MARK: - Data Model Tests
   
   func test_Basic_DataModel_Functionality_Should_Work() {
-    let dataModel = DataModel.sharedInstance
+    let dataModel = DataModel()
     
     // Make two passes to make sure after add-remove cycle it still works.
     var passesLeft = 2
@@ -185,7 +185,7 @@ class DiaryAppTests: XCTestCase {
   }
   
   func test_UIDataModel_Proxy_Date_Categorizing_Should_Work() {
-    let dataModel = DataModel.sharedInstance
+    let dataModel = DataModel()
     XCTAssert(dataModel.recordsCount == 0)
     let dataModelProxy = DataModelUIProxy(dataModel: dataModel)
     
@@ -222,7 +222,7 @@ class DiaryAppTests: XCTestCase {
   }
   
   func test_DataModelProxy_Should_Update_Itself_Correctly_After_DataModel_Records_Update_Delete_Insert() {
-    let dataModel = DataModel.sharedInstance
+    let dataModel = DataModel()
     XCTAssert(dataModel.recordsCount == 0)
     let dataModelProxy = DataModelUIProxy(dataModel: dataModel)
 
@@ -292,7 +292,7 @@ class DiaryAppTests: XCTestCase {
   }
   
   func test_Queries_To_Proxy_Model_For_Model_Data_Indices_Should_Work_Correctly() {
-    let dataModel = DataModel.sharedInstance
+    let dataModel = DataModel()
     XCTAssert(dataModel.recordsCount == 0)
     let dataModelProxy = DataModelUIProxy(dataModel: dataModel)
     
