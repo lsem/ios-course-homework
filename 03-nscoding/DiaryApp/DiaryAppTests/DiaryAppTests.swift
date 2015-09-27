@@ -153,22 +153,7 @@ class DiaryAppTests: XCTestCase {
     XCTAssert(restoredSettingsObject!.showTimeAndDate == true, "Mismatch in naturalLanguageSupport")
   }
   
-  // Test: DataModelTest()
-  //  1. insert element, retrieve collection [0] == that element
-  //  2. insert element, remove element
-  //  3. insert elememt 1, insert 2, retireve collection == 1,2
-  //  3. insert 1, then 2, then, remove 1
-  // Test: ProxyTest()
-  //  1. add few records: one today, then one erlier, then this week, then again today, then again this week, than again erlier.
-  //    test that we have all of them as expected.
-  //    then, remove one today, recheck ALL.
-  //    then, remove this week, recheck ALL.
-  //    then remove all next and finally check nothing is here.
-  //    after that, try to add one or two records to check adding still working adter full cycle.
-  //
-  //  2. test whether it behaves correctly on limits: remove when nothing here, remove unexsting, ..
-  //  3. test whether it can change date correctly.
-  //  3. test whether all this stuff like day, weekday is working correctly.
+  // MARK: - Data Model Tests
   
   func test_Basic_DataModel_Functionality_Should_Work() {
     let dataModel = DataModel.sharedInstance
