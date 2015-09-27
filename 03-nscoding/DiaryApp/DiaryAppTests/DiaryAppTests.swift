@@ -153,6 +153,180 @@ class DiaryAppTests: XCTestCase {
     XCTAssert(restoredSettingsObject!.showTimeAndDate == true, "Mismatch in naturalLanguageSupport")
   }
   
+  // Test: DataModelTest()
+  //  1. insert element, retrieve collection [0] == that element
+  //  2. insert element, remove element
+  //  3. insert elememt 1, insert 2, retireve collection == 1,2
+  //  3. insert 1, then 2, then, remove 1
+  // Test: ProxyTest()
+  //  1. add few records: one today, then one erlier, then this week, then again today, then again this week, than again erlier.
+  //    test that we have all of them as expected.
+  //    then, remove one today, recheck ALL.
+  //    then, remove this week, recheck ALL.
+  //    then remove all next and finally check nothing is here.
+  //    after that, try to add one or two records to check adding still working adter full cycle.
+  //
+  //  2. test whether it behaves correctly on limits: remove when nothing here, remove unexsting, ..
+  //  3. test whether it can change date correctly.
+  //  3. test whether all this stuff like day, weekday is working correctly.
+  
+  func test_Basic_DataModel_Functionality_Should_Work() {
+    let dataModel = DataModel.sharedInstance
+    
+    // Make two passes to make sure after add-remove cycle it still works.
+    var passesLeft = 2
+    while (passesLeft-- != 0) {
+      XCTAssert(dataModel.retrieveAllDiaryRecords().count == 0)
+      XCTAssert(dataModel.recordsCount == 0)
+      
+      dataModel.addDiaryRecord(DiaryRecord(name: "Sunday", text: "Good day", mood: RecordMood.Good))
+      
+      XCTAssert(dataModel.recordsCount == 1)
+
+      // TODO: Make it separete test with descriptive name
+      // Verify getting data working and it is not destructive
+      XCTAssert(dataModel.retrieveAllDiaryRecords().count == 1)
+      XCTAssert(dataModel.retrieveAllDiaryRecords().count == 1)
+      XCTAssert(dataModel.retrieveAllDiaryRecords()[0].name == "Sunday")
+      XCTAssert(dataModel.retrieveAllDiaryRecords()[0].text == "Good day")
+      XCTAssert(dataModel.retrieveAllDiaryRecords()[0].mood == RecordMood.Good)
+     
+      // TODO: Make it separete test with descriptive name
+      // Verify removing data working
+      dataModel.removeDiaryRecordAt(index: 0)
+      XCTAssert(dataModel.recordsCount == 0)
+      XCTAssert(dataModel.retrieveAllDiaryRecords().count == 0)
+    }
+  }
+  
+  func test_UIDataModel_Proxy_Date_Categorizing_Should_Work() {
+    let dataModel = DataModel.sharedInstance
+    XCTAssert(dataModel.recordsCount == 0)
+    let dataModelProxy = DataModelUIProxy(dataModel: dataModel)
+    
+    // Check currently proxy does not return any data
+    XCTAssert(dataModelProxy.retrieveErlierRecords().count == 0)
+    XCTAssert(dataModelProxy.retrieveTheseWeekRecords().count == 0)
+    XCTAssert(dataModelProxy.retrieveTodayRecords().count == 0)
+    
+    // Add some data to datamodel and verify proxy model knows about them
+    dataModel.addDiaryRecord(DiaryRecord(name: "Sunday", text: "Good day", mood: RecordMood.Good))
+    XCTAssert(dataModelProxy.retrieveErlierRecords().count == 0)
+    XCTAssert(dataModelProxy.retrieveTheseWeekRecords().count == 0)
+    XCTAssert(dataModelProxy.retrieveTodayRecords().count == 1)
+    
+    // And one more
+    dataModel.addDiaryRecord(DiaryRecord(name: "Monday", text: "Again Good day", mood: RecordMood.Good))
+    XCTAssert(dataModelProxy.retrieveErlierRecords().count == 0)
+    XCTAssert(dataModelProxy.retrieveTheseWeekRecords().count == 0)
+    XCTAssert(dataModelProxy.retrieveTodayRecords().count == 2)
+    
+    // And check also what it fact it returns
+    XCTAssert(dataModelProxy.retrieveTodayRecords()[0].name == "Sunday")
+    XCTAssert(dataModelProxy.retrieveTodayRecords()[1].name == "Monday")
+  }
+  
+  static func dateWithDaysAdded(date: NSDate, days: Int) -> NSDate {
+    let secondsTotal: NSTimeInterval = 60.0 * 60.0 * 24.0 * Double(days)
+    return date.dateByAddingTimeInterval(secondsTotal)
+  }
+  
+  static func dateWithHoursAdded(date: NSDate, hours: Int) -> NSDate {
+    let secondsTotal: NSTimeInterval = 60.0 * 60.0 * Double(hours)
+    return date.dateByAddingTimeInterval(secondsTotal)
+  }
+  
+  func test_DataModelProxy_Should_Update_Itself_Correctly_After_DataModel_Records_Update_Delete_Insert() {
+    let dataModel = DataModel.sharedInstance
+    XCTAssert(dataModel.recordsCount == 0)
+    let dataModelProxy = DataModelUIProxy(dataModel: dataModel)
+
+    // Make all tests two passes on the same instance to verify it can work properly after full usage cycle
+    var passesLeft = 2
+    while passesLeft-- != 0 {
+      
+      dataModel.addDiaryRecord(DiaryRecord(name: "Sunday", text: "Good day", mood: RecordMood.Good))
+      dataModel.addDiaryRecord(DiaryRecord(name: "Monday", text: "Another Good day", mood: RecordMood.Good))
+
+      XCTAssert(dataModelProxy.retrieveErlierRecords().count == 0)
+      XCTAssert(dataModelProxy.retrieveTheseWeekRecords().count == 0)
+      XCTAssert(dataModelProxy.retrieveTodayRecords().count == 2)
+      XCTAssert(dataModelProxy.retrieveAllRecordsSortedByCreationDate().count == 2)
+      let dateOrderedIndex = dataModelProxy.retrieveAllRecordsSortedByCreationDate()
+      XCTAssert(dataModelProxy.retrieveTodayRecords()[0].name == "Sunday")
+      XCTAssert(dataModelProxy.retrieveTodayRecords()[1].name == "Monday")
+      XCTAssert(dateOrderedIndex[0].name == "Sunday")
+      XCTAssert(dateOrderedIndex[1].name == "Monday")
+      
+      // Lets change record date to some erlier equialent (more then 7 days back)
+      dataModel.updateDiaryRecordAt(index: 1) { (record: DiaryRecord) in
+        record.creationDate = DiaryAppTests.dateWithDaysAdded(record.creationDate, days: -10)
+      };
+
+      XCTAssert(dataModelProxy.retrieveErlierRecords().count == 1)
+      XCTAssert(dataModelProxy.retrieveTheseWeekRecords().count == 0)
+      XCTAssert(dataModelProxy.retrieveTodayRecords().count == 1)
+      XCTAssert(dataModelProxy.retrieveAllRecordsSortedByCreationDate().count == 2)
+      let dateOrderedIndexAftedUpdated = dataModelProxy.retrieveAllRecordsSortedByCreationDate()
+      XCTAssert(dataModelProxy.retrieveTodayRecords()[0].name == "Sunday")
+      XCTAssert(dataModelProxy.retrieveErlierRecords()[0].name == "Monday")
+      XCTAssert(dateOrderedIndexAftedUpdated[0].name == "Monday")
+      XCTAssert(dateOrderedIndexAftedUpdated[1].name == "Sunday")
+
+      // Lets change record date to some erlier equialent (more then 7 days back)
+      dataModel.updateDiaryRecordAt(index: 1) { (record: DiaryRecord) in
+        record.creationDate = DiaryAppTests.dateWithDaysAdded(record.creationDate, days: +10)
+      };
+      
+      XCTAssert(dataModelProxy.retrieveErlierRecords().count == 0)
+      XCTAssert(dataModelProxy.retrieveTheseWeekRecords().count == 0)
+      XCTAssert(dataModelProxy.retrieveTodayRecords().count == 2)
+      XCTAssert(dataModelProxy.retrieveAllRecordsSortedByCreationDate().count == 2)
+      let dateOrderedIndexAftertTwoUpdates = dataModelProxy.retrieveAllRecordsSortedByCreationDate()
+      XCTAssert(dataModelProxy.retrieveTodayRecords()[0].name == "Sunday")
+      XCTAssert(dataModelProxy.retrieveTodayRecords()[1].name == "Monday")
+      XCTAssert(dateOrderedIndexAftertTwoUpdates[0].name == "Sunday")
+      XCTAssert(dateOrderedIndexAftertTwoUpdates[1].name == "Monday")
+      
+      // Remove test
+      dataModel.removeDiaryRecordAt(index: 0) // remove Sunday's record
+      XCTAssert(dataModelProxy.retrieveErlierRecords().count == 0)
+      XCTAssert(dataModelProxy.retrieveTheseWeekRecords().count == 0)
+      XCTAssert(dataModelProxy.retrieveTodayRecords().count == 1)
+      XCTAssert(dataModelProxy.retrieveAllRecordsSortedByCreationDate().count == 1)
+      let dateOrderedIndexAftertRemove = dataModelProxy.retrieveAllRecordsSortedByCreationDate()
+      XCTAssert(dataModelProxy.retrieveTodayRecords()[0].name == "Monday")
+      XCTAssert(dateOrderedIndexAftertRemove[0].name == "Monday")
+      // Remove latest
+      dataModel.removeDiaryRecordAt(index: 0) // remove Sunday's record
+      XCTAssert(dataModelProxy.retrieveErlierRecords().count == 0)
+      XCTAssert(dataModelProxy.retrieveTheseWeekRecords().count == 0)
+      XCTAssert(dataModelProxy.retrieveTodayRecords().count == 0)
+      XCTAssert(dataModelProxy.retrieveAllRecordsSortedByCreationDate().count == 0)
+    }
+  }
+  
+  func test_Queries_To_Proxy_Model_For_Model_Data_Indices_Should_Work_Correctly() {
+    let dataModel = DataModel.sharedInstance
+    XCTAssert(dataModel.recordsCount == 0)
+    let dataModelProxy = DataModelUIProxy(dataModel: dataModel)
+    
+    dataModel.addDiaryRecord(DiaryRecord(name: "Sunday", text: "Good day", mood: RecordMood.Good))
+    dataModel.addDiaryRecord(DiaryRecord(name: "Monday", text: "Another Good day", mood: RecordMood.Good))
+    
+    XCTAssert(dataModelProxy.getModelRecordIdByTodayRecordIndex(0) == 0)
+    XCTAssert(dataModelProxy.getModelRecordIdByTodayRecordIndex(1) == 1)
+
+    // After this monday should left todays group but data index should be the same
+    dataModel.updateDiaryRecordAt(index: 1) { (record: DiaryRecord) in
+      record.creationDate = DiaryAppTests.dateWithDaysAdded(record.creationDate, days: -10)
+    };
+
+    XCTAssert(dataModelProxy.getModelRecordIdByTodayRecordIndex(0) == 0)
+    XCTAssert(dataModelProxy.getModelRecordIdByErlierRecordIndex(0) == 1)
+    
+  }
+  
   func testPerformanceExample() {
     // This is an example of a performance test case.
     self.measureBlock {
