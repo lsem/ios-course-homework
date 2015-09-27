@@ -9,10 +9,15 @@
 import UIKit
 
 class MasterViewController: UITableViewController, SettingsControllerListener {
+
+  static let TodayRecordsTableSectionIndex = 0
+  static let ThisWeekRecordsTableSectionIndex = 1
+  static let ErlierRecordsTableSectionIndex = 1
   
   var detailViewController: DetailViewController? = nil
   var objects = [DiaryRecord]()
   var settingsViewController: SettingsViewController?
+  let dataModelProxy: DataModelUIProxy = DataModelUIProxy(dataModel: DataModel.sharedInstance)
   
   @IBAction func unwindToContainerVC(segue: UIStoryboardSegue) {
     // TODO: What should I do here?
@@ -61,9 +66,8 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
   }
   
   func insertNewObject(sender: AnyObject) {
-    objects.insert(DiaryRecord(), atIndex: 0)
-    let indexPath = NSIndexPath(forRow: 0, inSection: 0)
-    self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+    DataModel.sharedInstance.addDiaryRecord(DiaryRecord())
+    refreshRecordTable()
   }
   
   func refreshRecordTable() {
@@ -76,9 +80,16 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
   override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
     if segue.identifier == "showDetail" {
       if let indexPath = self.tableView.indexPathForSelectedRow {
-        let selectedDiaryRecord = objects[indexPath.row]
+        let selectedRowCategory = decodeRecordCategoryForSection(indexPath.section)
+        var selectedRecordObject: DiaryRecord? = nil
+        switch selectedRowCategory {
+        case .Today: selectedRecordObject = self.dataModelProxy.getTodayRecordAtIndex(indexPath.row)
+        case .ThisWeek: selectedRecordObject = self.dataModelProxy.getThisWeelRecordAtIndex(indexPath.row)
+        case .Erlier: selectedRecordObject = self.dataModelProxy.getErlierRecordAtIndex(indexPath.row)
+        }
+      
         let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
-        controller.selectedDiaryRecord = selectedDiaryRecord
+        controller.selectedDiaryRecord = selectedRecordObject!
         controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
         controller.navigationItem.leftItemsSupplementBackButton = true
       }
@@ -112,93 +123,78 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
   }
   
   override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-    return 3
+    var sectionsCount = 0
+    if self.dataModelProxy.todayRecordsCount > 0 { sectionsCount += 1 }
+    if self.dataModelProxy.thisWeekRecordsCount > 0 { sectionsCount += 1 }
+    if self.dataModelProxy.erlierRecordsCount > 0 { sectionsCount += 1 }
+    return sectionsCount
   }
   
-
-  override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-    switch section {
-    case 0: return "Today"
-    case 1: return "This Week"
-    case 2: return "Eirlier"
+  enum RecordsCategory { case Today; case ThisWeek; case Erlier }
+  
+  func decodeRecordCategoryForSection(section: Int) -> RecordsCategory {
+    
+    let todayRecordsCount = self.dataModelProxy.todayRecordsCount
+    let thisWeekRecordsCount = self.dataModelProxy.thisWeekRecordsCount
+    let erlierRecordsCount = self.dataModelProxy.erlierRecordsCount
+    
+    switch section  {
+    case 0:
+      if todayRecordsCount > 0 { return .Today }
+      if thisWeekRecordsCount > 0 { return .ThisWeek }
+      if erlierRecordsCount > 0 { return .Erlier }
+      assert(false)
+    case 1:
+      if todayRecordsCount > 0 {
+        if thisWeekRecordsCount > 0 {
+          return .ThisWeek
+        } else {
+          return .Erlier
+        }
+      } else {
+        // no today records
+        assert(erlierRecordsCount > 0)
+        return .Erlier
+      }
+    case 2:
+      assert(erlierRecordsCount > 0)
+      return .Erlier
     default:
       assert(false)
     }
   }
   
-  override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    let today = NSDate()
-    var flags = NSCalendarUnit()
-    flags.insert(NSCalendarUnit.Day)
-    flags.insert(NSCalendarUnit.WeekOfMonth)
-    let todayComponents = NSCalendar.currentCalendar().components(flags, fromDate: today)
-
-    var todayCount = 0
-    var thisWeekCount = 0
-//    var othersCount = 0
-    
-    
-    
-    // TODO: Cache this
-    for o in self.objects {
-      let objectDataComponents = NSCalendar.currentCalendar().components(flags, fromDate: o.creationDate)
-      NSLog("objectDataComponents.day: \(objectDataComponents.day)")
-
-      if objectDataComponents.day == todayComponents.day {
-        todayCount += 1
-      } else if objectDataComponents.weekOfYear == todayComponents.weekOfYear {
-        thisWeekCount += 1
-      }
-    }
-    
-    
-    if section == 0 {
-      return todayCount
-    } else if section == 1 {
-      return thisWeekCount
-    } else {
-      return self.objects.count - thisWeekCount - todayCount
+  override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    let category = decodeRecordCategoryForSection(section)
+    switch category {
+    case .Today:
+      return "Today"
+    case .ThisWeek:
+      return "This Week"
+    case .Erlier:
+      return "Erlier"
     }
   }
   
-  override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-    let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
-
-    let selectedDiaryRecord = objects[indexPath.row]
-//    
-    NSLog("cellForRowAtIndexPath: \(indexPath.section):\(indexPath.row)")
-//    
-//    let today = NSDate()
-//    var flags = NSCalendarUnit()
-//    flags.insert(NSCalendarUnit.Day)
-//    flags.insert(NSCalendarUnit.WeekOfMonth)
-//    let todayComponents = NSCalendar.currentCalendar().components(flags, fromDate: today)
-//    let cellComponents = NSCalendar.currentCalendar().components(flags, fromDate: selectedDiaryRecord.creationDate)
-//    
-//    if indexPath.section == 0 {
-//      // Today section
-//
-//      //today
-//      NSLog("section 0")
-//      if cellComponents.day != todayComponents.day {
-//        return UITableViewCell()
-//      }
-//    }
-//
-//    if indexPath.section == 1 {
-//      // This Weak secion
-//    }
-//      
-//    
-//    
-////    let selectedDiaryRecord = self.objects[indexPath.row]
-    let (title, subtitle) = DiaryRecordViewFormatter.sharedInstance.recordMasterViewRow(selectedDiaryRecord)
+  override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    let category = decodeRecordCategoryForSection(section)
+    switch category {
+    case .Today:
+      return self.dataModelProxy.todayRecordsCount
+    case .ThisWeek:
+      return self.dataModelProxy.thisWeekRecordsCount
+    case .Erlier:
+      return self.dataModelProxy.erlierRecordsCount
+    }
+  }
+  
+  func prepareCell(cell: UITableViewCell, forRecord record: DiaryRecord) -> UITableViewCell {
+    let (title, subtitle) = DiaryRecordViewFormatter.sharedInstance.recordMasterViewRow(record)
     cell.textLabel!.text = title
     cell.detailTextLabel!.text = subtitle
-    
     if cell is TableViewCell {
       let tableViewCell = cell as! TableViewCell
-      switch selectedDiaryRecord.mood {
+      switch record.mood {
       case .Bad:
         tableViewCell.moodIconImage.image = UIImage(named: "rain_sm")
       case .Neutral:
@@ -209,13 +205,25 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
         tableViewCell.moodIconImage.image = nil
       }
     }
-    
     return cell
   }
   
-  // This would create all sorts of used queries
-  func createReferenceCellsForGeometryQueries() {
-    
+  override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
+
+    NSLog("cellForRowAtIndexPath: \(indexPath.section):\(indexPath.row)")
+    let category = decodeRecordCategoryForSection(indexPath.section)
+    switch category {
+    case .Today:
+      let record = dataModelProxy.getTodayRecordAtIndex(indexPath.row)
+      return prepareCell(cell, forRecord: record)
+    case .ThisWeek:
+      let record = dataModelProxy.getThisWeelRecordAtIndex(indexPath.row)
+      return prepareCell(cell, forRecord: record)
+    case .Erlier:
+      let record = dataModelProxy.getErlierRecordAtIndex(indexPath.row)
+      return prepareCell(cell, forRecord: record)
+    }
   }
   
   override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {

@@ -23,6 +23,10 @@ class DataModel{
     }
   }
   
+  func initFromArray(data: [DiaryRecord]) {
+      self.recordsCollection = data
+  }
+  
   func addDiaryRecord(record: DiaryRecord) {
     recordsCollection.append(record)
     notifyCollectionChange()
@@ -96,7 +100,18 @@ class DataModelUIProxy : DataModelDelegate {
     self.dataModel.delegate = self
   }
   
-  // MARK: - Public methods
+  // MARK: - Public methods and properties
+
+  var todayRecordsCount: Int { get {
+    rebuildDateRecordsCacheIfNecessary()
+    return self.todayRecordsIndex.count
+    }
+  }
+
+  func getTodayRecordAtIndex(index: Int) -> DiaryRecord {
+    let index = getModelRecordIdByTodayRecordIndex(index)
+    return self.dataModel.recordsCollection[index]
+  }
   
   func retrieveTodayRecords() -> [DiaryRecord] {
     rebuildDateRecordsCacheIfNecessary()
@@ -108,7 +123,18 @@ class DataModelUIProxy : DataModelDelegate {
     }
     return todayRecords
   }
+  
+  var thisWeekRecordsCount: Int { get {
+    rebuildDateRecordsCacheIfNecessary()
+    return self.thisWeekRecordsIndex.count
+    }
+  }
 
+  func getThisWeelRecordAtIndex(index: Int) -> DiaryRecord {
+    let index = getModelRecordIdByThisWeekRecordIndex(index)
+    return self.dataModel.recordsCollection[index]
+  }
+  
   func retrieveTheseWeekRecords() -> [DiaryRecord] {
     rebuildDateRecordsCacheIfNecessary()
     // TODO: Reserve memory for ahead
@@ -118,6 +144,17 @@ class DataModelUIProxy : DataModelDelegate {
       weekRecords.append(allRecords[index])
     }
     return weekRecords
+  }
+  
+  var erlierRecordsCount: Int { get {
+      rebuildDateRecordsCacheIfNecessary()
+      return self.erlierRecordsIndex.count
+    }
+  }
+  
+  func getErlierRecordAtIndex(index: Int) -> DiaryRecord {
+    let index = getModelRecordIdByErlierRecordIndex(index)
+    return self.dataModel.recordsCollection[index]
   }
   
   func retrieveErlierRecords() -> [DiaryRecord] {

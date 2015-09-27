@@ -12,7 +12,6 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDelegate {
   
   var window: UIWindow?
-  var diaryRecordsCollection: [DiaryRecord]?
   var masterViewController: MasterViewController?
   let repository = SystemKeyArchiverUnarchiverRepository()
   
@@ -23,7 +22,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     loadDataIfThereAreAny()
     becomeDetailViewControllerDelegate()
     resolveMasterViewController()
-    provideDataToMasterController()
     
     return true
   }
@@ -46,10 +44,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     let navigationController = splitViewController.viewControllers[splitViewController.viewControllers.count-1] as! UINavigationController
     navigationController.topViewController!.navigationItem.leftBarButtonItem = splitViewController.displayModeButtonItem()
     splitViewController.delegate = self
-  }
-  
-  func provideDataToMasterController() {
-    self.masterViewController?.objects = self.diaryRecordsCollection!
   }
   
   func applicationWillResignActive(application: UIApplication) {
@@ -83,16 +77,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
   
   func loadDataIfThereAreAny() {
     if let loadedData = self.repository.loadDiaryRecordCollection() {
-      self.diaryRecordsCollection = loadedData
+      DataModel.sharedInstance.initFromArray(loadedData)
     } else {
       // It could be either due to failed initialization or because of first run.
       // Lets initialize with some hard coded.
       // Alternativey, we could ask repository to get seed data, but this is out of scope for this MVP.
-      self.diaryRecordsCollection = [
+      let initialData = [
         DiaryRecord(name: "Finally", text: "Finally I almost done first home work..", mood: RecordMood.Good),
         DiaryRecord(name: "Things getting better", text: "Trying to implement persistance", mood: RecordMood.Neutral),
       ]
-      NSLog("Currenly data looks like: \(self.diaryRecordsCollection)")
+      DataModel.sharedInstance.initFromArray(initialData)
     }
   }
   
