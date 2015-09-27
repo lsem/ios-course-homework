@@ -21,8 +21,6 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
   
   @IBAction func unwindToContainerVC(segue: UIStoryboardSegue) {
     // TODO: What should I do here?
-    // Probably, this is right place for changing settings?
-    NSLog("Unwind!")
   }
   
   func detailChanged(note: NSNotification) {
@@ -112,39 +110,20 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
   }
   
   // MARK: - Table View BEGIN
-
-  // MARK: - UITableViewDataSource
-  
-  
-  // MARK: - UITableViewDelegate
-
-  override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-    return 50
-  }
-  
-  override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-    var sectionsCount = 0
-    if self.dataModelProxy.todayRecordsCount > 0 { sectionsCount += 1 }
-    if self.dataModelProxy.thisWeekRecordsCount > 0 { sectionsCount += 1 }
-    if self.dataModelProxy.erlierRecordsCount > 0 { sectionsCount += 1 }
-    return sectionsCount
-  }
   
   enum RecordsCategory { case Today; case ThisWeek; case Erlier }
   
   func decodeRecordCategoryForSection(section: Int) -> RecordsCategory {
-    
     let todayRecordsCount = self.dataModelProxy.todayRecordsCount
     let thisWeekRecordsCount = self.dataModelProxy.thisWeekRecordsCount
     let erlierRecordsCount = self.dataModelProxy.erlierRecordsCount
-    
     switch section  {
-    case 0:
+    case MasterViewController.TodayRecordsTableSectionIndex:
       if todayRecordsCount > 0 { return .Today }
       if thisWeekRecordsCount > 0 { return .ThisWeek }
       if erlierRecordsCount > 0 { return .Erlier }
       assert(false)
-    case 1:
+    case MasterViewController.ThisWeekRecordsTableSectionIndex:
       if todayRecordsCount > 0 {
         if thisWeekRecordsCount > 0 {
           return .ThisWeek
@@ -156,7 +135,7 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
         assert(erlierRecordsCount > 0)
         return .Erlier
       }
-    case 2:
+    case MasterViewController.ErlierRecordsTableSectionIndex:
       assert(erlierRecordsCount > 0)
       return .Erlier
     default:
@@ -164,15 +143,36 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
     }
   }
   
+  override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    let category = decodeRecordCategoryForSection(indexPath.section)
+    var record: DiaryRecord? = nil
+    switch category {
+    case .Today:
+      record = self.dataModelProxy.getTodayRecordAtIndex(indexPath.row)
+    case .ThisWeek:
+      record = self.dataModelProxy.getThisWeelRecordAtIndex(indexPath.row)
+    case .Erlier:
+      record = self.dataModelProxy.getErlierRecordAtIndex(indexPath.row)
+    }
+    let emptyRecordFixedHeight = CGFloat(50.0)
+    let nonEmptyRecordFixedHeight = CGFloat(100.0)
+    return record!.text.isEmpty ? emptyRecordFixedHeight : nonEmptyRecordFixedHeight
+  }
+  
+  override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    var sectionsCount = 0
+    if self.dataModelProxy.todayRecordsCount > 0 { sectionsCount += 1 }
+    if self.dataModelProxy.thisWeekRecordsCount > 0 { sectionsCount += 1 }
+    if self.dataModelProxy.erlierRecordsCount > 0 { sectionsCount += 1 }
+    return sectionsCount
+  }
+
   override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
     let category = decodeRecordCategoryForSection(section)
     switch category {
-    case .Today:
-      return "Today"
-    case .ThisWeek:
-      return "This Week"
-    case .Erlier:
-      return "Erlier"
+    case .Today: return "Today"
+    case .ThisWeek: return "This Week"
+    case .Erlier: return "Erlier"
     }
   }
   
@@ -195,14 +195,10 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
     if cell is TableViewCell {
       let tableViewCell = cell as! TableViewCell
       switch record.mood {
-      case .Bad:
-        tableViewCell.moodIconImage.image = UIImage(named: "rain_sm")
-      case .Neutral:
-        tableViewCell.moodIconImage.image = UIImage(named: "cloudy_sm")
-      case .Good:
-        tableViewCell.moodIconImage.image = UIImage(named: "sunny_sm")
-      case .NoSet:
-        tableViewCell.moodIconImage.image = nil
+      case .Bad: tableViewCell.moodIconImage.image = UIImage(named: "rain_sm")
+      case .Neutral: tableViewCell.moodIconImage.image = UIImage(named: "cloudy_sm")
+      case .Good: tableViewCell.moodIconImage.image = UIImage(named: "sunny_sm")
+      case .NoSet: tableViewCell.moodIconImage.image = nil
       }
     }
     return cell
@@ -211,7 +207,6 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
   override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
     let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
 
-    NSLog("cellForRowAtIndexPath: \(indexPath.section):\(indexPath.row)")
     let category = decodeRecordCategoryForSection(indexPath.section)
     switch category {
     case .Today:
@@ -239,8 +234,5 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
       // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view.
     }
   }
-  
-    // MARK: - Table View END
-
 }
 
