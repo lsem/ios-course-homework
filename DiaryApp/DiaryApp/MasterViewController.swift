@@ -21,6 +21,18 @@ class MasterViewController: UITableViewController {
   
   @IBAction func unwindToContainerVC(segue: UIStoryboardSegue) {
     // This is called on unwidning from settings view controller to this view controller
+    acceptApplicationSettingsChangeIfNecessary()
+  }
+  
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    subscribeOnAppSettingsChanges()
+    createSettingsButton()
+    createNewRecordButton()
+    setupUIAccordingToAppConfiguration()
+  }
+  
+  func acceptApplicationSettingsChangeIfNecessary() {
     if needToReloadData {
       DiaryRecordViewFormatter.sharedInstance.loadConfigurationFromApplicationSettings()
       reloadTableData()
@@ -33,27 +45,22 @@ class MasterViewController: UITableViewController {
   }
   
   func subscribeOnAppSettingsChanges() {
-    NSNotificationCenter.defaultCenter().addObserver(self, selector: Selector("settingsChanged:"), name: "applicationSettingsChanged", object: nil)
+    NSNotificationCenter.defaultCenter().addObserver(self, selector: Selector("settingsChanged:"),
+      name: "applicationSettingsChanged", object: nil)
   }
   
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    // Do any additional setup after loading the view, typically from a nib.
-    
-    subscribeOnAppSettingsChanges()
-    
-    // Create settings button and attach to navigation controller
+  func createSettingsButton() {
     let settingsButton = UIBarButtonItem(image: UIImage(named:"settings"), style: UIBarButtonItemStyle.Plain, target: self, action: "configureApp:")
     self.navigationItem.leftBarButtonItem = settingsButton
-    
-    // Create add button
+  }
+  
+  func createNewRecordButton() {
     let addButton = UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: "insertNewObject:")
     self.navigationItem.rightBarButtonItem = addButton
     if let split = self.splitViewController {
       let controllers = split.viewControllers
       self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
     }
-    setupUIAccordingToAppConfiguration()
   }
   
   func configureApp(sender: AnyObject) {
