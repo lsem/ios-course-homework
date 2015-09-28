@@ -8,7 +8,7 @@
 
 import UIKit
 
-class MasterViewController: UITableViewController, SettingsControllerListener {
+class MasterViewController: UITableViewController {
 
   static let TodayRecordsTableSectionIndex = 0
   static let ThisWeekRecordsTableSectionIndex = 1
@@ -17,22 +17,30 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
   var detailViewController: DetailViewController? = nil
   var settingsViewController: SettingsViewController?
   let dataModelProxy: DataModelUIProxy = DataModelUIProxy(dataModel: DataModel.sharedInstance)
+  var needToReloadData: Bool = false
   
   @IBAction func unwindToContainerVC(segue: UIStoryboardSegue) {
-    // TODO: What should I do here?
+    // This is called on unwidning from settings view controller to this view controller
+    if needToReloadData {
+      DiaryRecordViewFormatter.sharedInstance.loadConfigurationFromApplicationSettings()
+      reloadTableData()
+      needToReloadData = false
+    }
   }
   
-  func detailChanged(note: NSNotification) {
-    // TODO: Consider possible optimisation is update only changed rows.
-    self.refreshRecordTable()
+  func settingsChanged(note: NSNotification) {
+    needToReloadData = true
+  }
+  
+  func subscribeOnAppSettingsChanges() {
+    NSNotificationCenter.defaultCenter().addObserver(self, selector: Selector("settingsChanged:"), name: "applicationSettingsChanged", object: nil)
   }
   
   override func viewDidLoad() {
     super.viewDidLoad()
     // Do any additional setup after loading the view, typically from a nib.
     
-    // Subscribe on notificaion from detail controller
-    NSNotificationCenter.defaultCenter().addObserver(self, selector: "detailChanged:", name: "ChangeDetail", object: nil)
+    subscribeOnAppSettingsChanges()
     
     // Create settings button and attach to navigation controller
     let settingsButton = UIBarButtonItem(image: UIImage(named:"settings"), style: UIBarButtonItemStyle.Plain, target: self, action: "configureApp:")
@@ -55,7 +63,7 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
   override func viewWillAppear(animated: Bool) {
     self.clearsSelectionOnViewWillAppear = self.splitViewController!.collapsed
     super.viewWillAppear(animated)
-    refreshRecordTable()
+    reloadTableData()
   }
   
   override func didReceiveMemoryWarning() {
@@ -65,13 +73,12 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
   
   func insertNewObject(sender: AnyObject) {
     DataModel.sharedInstance.addDiaryRecord(DiaryRecord())
-    refreshRecordTable()
+    reloadTableData()
   }
   
-  func refreshRecordTable() {
+  func reloadTableData() {
     self.tableView.reloadData()
   }
-  
   
   // MARK: - Segues
   
@@ -87,7 +94,6 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
     } else if segue.identifier == "showSettings" {
       let settingsNavigationController = (segue.destinationViewController as! UINavigationController).topViewController
       self.settingsViewController = settingsNavigationController as? SettingsViewController
-      self.settingsViewController?.settingsControllerListener = self
     }
   }
   
@@ -95,7 +101,7 @@ class MasterViewController: UITableViewController, SettingsControllerListener {
   
   func settingsChanged() {
     setupUIAccordingToAppConfiguration()
-    refreshRecordTable()
+    reloadTableData()
   }
   
   func setupUIAccordingToAppConfiguration() {

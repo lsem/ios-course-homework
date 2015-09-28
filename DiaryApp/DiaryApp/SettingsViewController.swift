@@ -8,13 +8,6 @@
 
 import UIKit
 
-
-// Provides boundary between settings page interface implementation and
-// application.
-protocol SettingsControllerListener : class {
-  func settingsChanged()
-}
-
 class SettingsViewController: UITableViewController, UINavigationBarDelegate {
   static let TimeAndDateCellTag = 10
   static let DateOnlyCellTag = 11
@@ -27,7 +20,6 @@ class SettingsViewController: UITableViewController, UINavigationBarDelegate {
   var dateAndTimeIndexPath: NSIndexPath?
   var dateOnlyIndexPath: NSIndexPath?
   var naturalLanguageSupportIndexPath: NSIndexPath?
-  weak var settingsControllerListener: SettingsControllerListener?
   
   // MARK: - UIViewController
   
@@ -111,14 +103,18 @@ class SettingsViewController: UITableViewController, UINavigationBarDelegate {
       rightButtonItem.target = self
     }
   }
+  
+  func notifySettingsChanged() {
+    NSLog("SettingsVC: Settings have been changed: notifying observers")
+    NSNotificationCenter.defaultCenter().postNotificationName("applicationSettingsChanged", object: nil)
+  }
 
   // MARK: - Natural Language Support UISwitch
   @IBAction func naturalLanguageValueChanged(sender: AnyObject) {
     if let enabled = self.naturalLanguageSupportSwitch?.on {
-      assert(settingsControllerListener != nil, "Settings controller listener should exist at this moment")
       ApplicationSettings.sharedInstance.naturalLanguageSupport = enabled
-      ApplicationSettings.sharedInstance.saveToLocalFileSystemStorage()      
-      self.settingsControllerListener!.settingsChanged()
+      ApplicationSettings.sharedInstance.saveToLocalFileSystemStorage()
+      notifySettingsChanged()
     }
   }
   
@@ -136,7 +132,6 @@ class SettingsViewController: UITableViewController, UINavigationBarDelegate {
     assert(dateAndTimeIndexPath != nil, "Did you forget to call resolveUIConfiguration()?")
     assert(dateOnlyIndexPath != nil, "Did you forget to call resolveUIConfiguration()?")
     assert(naturalLanguageSupportIndexPath != nil, "Did you forget to call resolveUIConfiguration()?")
-    assert(settingsControllerListener != nil, "Settings controller listener should exist at this moment")
     
     // Makes all clear, then check which was
     deCheckAllRowsForSectionIndex(SettingsViewController.DateTimeFormatSectionIndex)
@@ -144,11 +139,11 @@ class SettingsViewController: UITableViewController, UINavigationBarDelegate {
     if self.dateAndTimeIndexPath == indexPath {
       checkCellAccessoryByIndexPath(self.dateAndTimeIndexPath!)
       ApplicationSettings.sharedInstance.showTimeAndDate = true
-      self.settingsControllerListener!.settingsChanged()
+      notifySettingsChanged()
     } else if self.dateOnlyIndexPath == indexPath {
       checkCellAccessoryByIndexPath(self.dateOnlyIndexPath!)
       ApplicationSettings.sharedInstance.showTimeAndDate = false
-      self.settingsControllerListener!.settingsChanged()
+      notifySettingsChanged()
     }
   }
   
