@@ -7,5 +7,5 @@ Please, see Releases for actual releases.
 
 # RELEASES
 [03-nscoding (Persistence)](https://github.com/lsem/ios-course-homework/archive/03-nscoding.zip)
-
+[04-tableview enhancements](https://github.com/lsem/ios-course-homework/archive/04-tableviewenh.zip)
 
