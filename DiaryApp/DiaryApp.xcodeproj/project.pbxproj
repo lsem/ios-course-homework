@@ -24,6 +24,7 @@
 		5F9F70921BB82946007888ED /* NSDateComparisonExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F9F70911BB82946007888ED /* NSDateComparisonExtension.swift */; settings = {ASSET_TAGS = (); }; };
 		5FC06ADB1BB6EF9F00981AE2 /* TableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FC06ADA1BB6EF9F00981AE2 /* TableViewCell.swift */; settings = {ASSET_TAGS = (); }; };
 		5FC4B7F01BAF4D1000051B1B /* README in Resources */ = {isa = PBXBuildFile; fileRef = 5FC4B7EF1BAF4D1000051B1B /* README */; settings = {ASSET_TAGS = (); }; };
+		5FCD906C1BB971490053339C /* DateEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FCD906B1BB971490053339C /* DateEditViewController.swift */; settings = {ASSET_TAGS = (); }; };
 		5FED7B861BB2AB50001F2D90 /* ApplicationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FED7B851BB2AB50001F2D90 /* ApplicationSettings.swift */; settings = {ASSET_TAGS = (); }; };
 		5FED7B881BB2D056001F2D90 /* DiaryRecordFormatterExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FED7B871BB2D056001F2D90 /* DiaryRecordFormatterExtensions.swift */; settings = {ASSET_TAGS = (); }; };
 		5FED7B8A1BB2D8C7001F2D90 /* ApplicationSettingsExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FED7B891BB2D8C7001F2D90 /* ApplicationSettingsExtensions.swift */; settings = {ASSET_TAGS = (); }; };
@@ -70,6 +71,7 @@
 		5F9F70911BB82946007888ED /* NSDateComparisonExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSDateComparisonExtension.swift; sourceTree = "<group>"; };
 		5FC06ADA1BB6EF9F00981AE2 /* TableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableViewCell.swift; sourceTree = "<group>"; };
 		5FC4B7EF1BAF4D1000051B1B /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		5FCD906B1BB971490053339C /* DateEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DateEditViewController.swift; sourceTree = "<group>"; };
 		5FED7B851BB2AB50001F2D90 /* ApplicationSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApplicationSettings.swift; sourceTree = "<group>"; };
 		5FED7B871BB2D056001F2D90 /* DiaryRecordFormatterExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiaryRecordFormatterExtensions.swift; sourceTree = "<group>"; };
 		5FED7B891BB2D8C7001F2D90 /* ApplicationSettingsExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApplicationSettingsExtensions.swift; sourceTree = "<group>"; };
@@ -140,6 +142,7 @@
 				5FC06ADA1BB6EF9F00981AE2 /* TableViewCell.swift */,
 				5F2FA01C1BB7632F00ECF182 /* DataModel.swift */,
 				5F9F70911BB82946007888ED /* NSDateComparisonExtension.swift */,
+				5FCD906B1BB971490053339C /* DateEditViewController.swift */,
 			);
 			path = DiaryApp;
 			sourceTree = "<group>";
@@ -313,6 +316,7 @@
 				5F8116841BAEABEC00991688 /* AppDelegate.swift in Sources */,
 				5F2FA01D1BB7632F00ECF182 /* DataModel.swift in Sources */,
 				5FED7B8A1BB2D8C7001F2D90 /* ApplicationSettingsExtensions.swift in Sources */,
+				5FCD906C1BB971490053339C /* DateEditViewController.swift in Sources */,
 				5F8F68E21BB18258006A63AB /* MoodSelectionSegmentedControl.swift in Sources */,
 				5FC06ADB1BB6EF9F00981AE2 /* TableViewCell.swift in Sources */,
 				5F8116B41BAED98500991688 /* SettingsViewController.swift in Sources */,

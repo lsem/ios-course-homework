@@ -19,9 +19,11 @@ class DetailViewController: UIViewController, UITextViewDelegate, UITextFieldDel
   static let CloudyMoodSegmentIndex = 2
   static let NoSetMoodSegmentIndex = UISegmentedControlNoSegment
   
+  @IBOutlet weak var changeDateButton: UIButton!
   @IBOutlet weak var textView: UITextView!
   @IBOutlet weak var moodSegmentedControl: UISegmentedControl!
   @IBOutlet weak var recordNameTextEdit: UITextField!
+  @IBOutlet weak var changeRecordDateButton: UIBarButtonItem!
   
   var recordModelId: Int = -1
   var lastSelectedIndex: Int = UISegmentedControlNoSegment
@@ -34,7 +36,23 @@ class DetailViewController: UIViewController, UITextViewDelegate, UITextFieldDel
       return nil
     }
   }
-
+  
+  func changeRecordDate(sender: AnyObject) {
+    performSegueWithIdentifier("changeRecordDateSegue", sender: self)
+  }
+  
+  override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    if segue.identifier == "changeRecordDateSegue" {
+      if let nav = segue.destinationViewController as? UINavigationController {
+        if let viewController = nav.topViewController as? DateEditViewController {
+          if let currentRecord = self.recordBeingEdited {
+            viewController.initDate =  currentRecord.creationDate
+          }
+        }
+      }
+    }
+  }
+  
   func updateEditedDiaryRecord(updateCb: (DiaryRecord) -> Void) {
     DataModel.sharedInstance.updateDiaryRecordAt(index: self.recordModelId,
         updateCb: { (record: DiaryRecord) -> Void in
@@ -51,7 +69,21 @@ class DetailViewController: UIViewController, UITextViewDelegate, UITextFieldDel
   var returnKeyPressedClosure: () -> Bool = {
     return false
   }
- 
+
+  @IBAction func returnFromDateEditPopup_Saved(segue: UIStoryboardSegue) {
+    let dateEditViewController = getViewControllerFromSegue(segue)
+    let dateTimeCanclled = dateEditViewController.dateTimePicker.date
+    updateEditedDiaryRecord() { $0.creationDate = dateTimeCanclled }
+  }
+  
+  @IBAction func returnFromDateEditPopup_Cancel(segue: UIStoryboardSegue) {
+    NSLog("Date record change cancelled")
+  }
+  
+  func getViewControllerFromSegue(segue: UIStoryboardSegue) -> DateEditViewController {
+    let dateEditViewController = segue.sourceViewController as! DateEditViewController
+    return dateEditViewController
+  }
   
   @IBAction func recordNameEditingChanged(sender: AnyObject) {
     if let newName = self.recordNameTextEdit.text {
@@ -194,6 +226,8 @@ class DetailViewController: UIViewController, UITextViewDelegate, UITextFieldDel
     self.textView.delegate = self
     self.setupUIForSelectedDiaryRecord()
     self.updateMoodUIState()
+    self.changeDateButton.addTarget(self, action: Selector("changeRecordDate:"),
+        forControlEvents: UIControlEvents.TouchUpInside)
   }
   
   // Keep here setting up UI elements for selected diary record
@@ -252,6 +286,7 @@ class DetailViewController: UIViewController, UITextViewDelegate, UITextFieldDel
   
   // MARK: - UITextVideDelegate
   func textViewDidChange(textView: UITextView) {
+    NSLog("textViewDidChange")
     updateEditedDiaryRecord() {
       $0.text = textView.text
     }

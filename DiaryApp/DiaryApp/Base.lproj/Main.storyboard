@@ -24,6 +24,49 @@
             </objects>
             <point key="canvasLocation" x="-38" y="-630"/>
         </scene>
+        <!--Date Edit View Controller-->
+        <scene sceneID="n9C-kP-dyy">
+            <objects>
+                <viewController id="uOe-QR-085" customClass="DateEditViewController" customModule="DiaryApp" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="ZcF-eC-XZH"/>
+                        <viewControllerLayoutGuide type="bottom" id="5YN-ak-3E2"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="xWR-Pf-MsA">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <datePicker contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="dateAndTime" minuteInterval="1" translatesAutoresizingMaskIntoConstraints="NO" id="Sr8-K4-tob">
+                                <rect key="frame" x="0.0" y="101" width="375" height="216"/>
+                                <date key="date" timeIntervalSinceReferenceDate="465138886.05660802">
+                                    <!--2015-09-28 13:14:46 +0000-->
+                                </date>
+                            </datePicker>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="jka-DC-5rv">
+                        <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="se1-Zh-ZOX">
+                            <connections>
+                                <segue destination="mIO-9L-fb9" kind="unwind" unwindAction="returnFromDateEditPopup_Cancel:" id="4Pc-BR-j9I"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" systemItem="save" id="XLA-DC-dy5">
+                            <connections>
+                                <segue destination="mIO-9L-fb9" kind="unwind" unwindAction="returnFromDateEditPopup_Saved:" id="exq-Mo-xcl"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina47"/>
+                    <connections>
+                        <outlet property="dateTimePicker" destination="Sr8-K4-tob" id="vm8-Kg-dCb"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="76x-3n-ugE" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <exit id="mIO-9L-fb9" userLabel="Exit" sceneMemberID="exit"/>
+            </objects>
+            <point key="canvasLocation" x="1837.5" y="-465.5"/>
+        </scene>
         <!--Detail-->
         <scene sceneID="yUG-lL-AsK">
             <objects>
@@ -83,17 +126,28 @@
                         </variation>
                     </view>
                     <toolbarItems/>
-                    <navigationItem key="navigationItem" title="16 September" id="mOI-FS-AaM"/>
+                    <navigationItem key="navigationItem" title="16 September" id="mOI-FS-AaM">
+                        <barButtonItem key="rightBarButtonItem" style="plain" id="7MK-hr-vvR">
+                            <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="CTn-WA-xhv">
+                                <rect key="frame" x="283" y="2" width="76" height="39"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Date" image="settings"/>
+                            </button>
+                        </barButtonItem>
+                    </navigationItem>
                     <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina47"/>
                     <connections>
+                        <outlet property="changeDateButton" destination="CTn-WA-xhv" id="fDe-Zj-14Z"/>
+                        <outlet property="changeRecordDateButton" destination="7MK-hr-vvR" id="7gQ-BK-DoO"/>
                         <outlet property="moodSegmentedControl" destination="6zw-21-gbG" id="uxB-aN-A7W"/>
                         <outlet property="recordNameTextEdit" destination="hRw-uf-LKA" id="7OG-4H-ua0"/>
                         <outlet property="textView" destination="ivf-Cl-UZd" id="6aZ-ld-3C8"/>
+                        <segue destination="TVe-4L-IOi" kind="presentation" identifier="changeRecordDateSegue" id="MMC-2p-lmD"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="FJe-Yq-33r" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1140.5" y="256.5"/>
+            <point key="canvasLocation" x="1118.5" y="258.5"/>
         </scene>
         <!--Split View Controller-->
         <scene sceneID="Nki-YV-4Qg">
@@ -130,14 +184,14 @@
                                             <rect key="frame" x="15" y="6" width="31.5" height="19.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="16"/>
-                                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" text="Subtitle" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Tbe-9r-PFR">
                                             <rect key="frame" x="15" y="25.5" width="40.5" height="13.5"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="11"/>
-                                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" image="rain_sm" translatesAutoresizingMaskIntoConstraints="NO" id="QOu-3T-k2F">
@@ -296,13 +350,33 @@
             </objects>
             <point key="canvasLocation" x="865.5" y="-1548.5"/>
         </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="wqM-Xq-MtX">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="TVe-4L-IOi" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina47"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="aMr-im-OqL">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="uOe-QR-085" kind="relationship" relationship="rootViewController" id="JNH-bn-ETg"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="6gD-9b-A5X" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1250.5" y="-465.5"/>
+        </scene>
     </scenes>
     <resources>
         <image name="cloudy_sm" width="25" height="25"/>
         <image name="rain_sm" width="25" height="25"/>
+        <image name="settings" width="38" height="39"/>
         <image name="sunny_sm" width="25" height="25"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="SFf-SI-dBX"/>
+        <segue reference="Tll-UG-LXB"/>
     </inferredMetricsTieBreakers>
 </document>

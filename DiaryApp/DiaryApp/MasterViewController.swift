@@ -12,7 +12,7 @@ class MasterViewController: UITableViewController {
 
   static let TodayRecordsTableSectionIndex = 0
   static let ThisWeekRecordsTableSectionIndex = 1
-  static let ErlierRecordsTableSectionIndex = 1
+  static let ErlierRecordsTableSectionIndex = 2
   
   var detailViewController: DetailViewController? = nil
   var settingsViewController: SettingsViewController?
