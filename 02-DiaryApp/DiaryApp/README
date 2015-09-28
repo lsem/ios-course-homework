@@ -1,6 +1,0 @@
-Q: How to make unwind segue?
-A:
-Create a manual segue (ctrl-drag from File’s Owner to Exit),
-Choose it in the Left Controller Menu below green EXIT button.
-Insert Name of Segue to unwind.
-Then,- (void)performSegueWithIdentifier:(NSString *)identifier sender:(id)sender. with your segue identify.
