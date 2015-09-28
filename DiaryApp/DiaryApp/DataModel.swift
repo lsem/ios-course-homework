@@ -324,6 +324,8 @@ class DataModelUIProxy : DataModelDelegate {
     if old.creationDate != new.creationDate {
       self.cacheValid = false
     }
+    // TODO: Obvious improvement is having separate cache validity 
+    // indicator for mood cache and for creationData cache.
     if old.mood != new.mood {
       self.cacheValid = false
     }
