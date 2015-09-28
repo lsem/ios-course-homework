@@ -85,6 +85,7 @@ class DataModelUIProxy : DataModelDelegate {
   private var thisWeekRecordsIndex: Array<Int>
   private var erlierRecordsIndex: Array<Int>
   private var dateOrderedIndexData: Array<Int>
+  private var moodOrderedIndexData: Dictionary<RecordMood, Array<Int>>
   private var cacheValid: Bool
 
   private lazy var dateComponentsRetrievalFlags: NSCalendarUnit = {
@@ -104,6 +105,7 @@ class DataModelUIProxy : DataModelDelegate {
     self.thisWeekRecordsIndex = []
     self.erlierRecordsIndex = []
     self.dateOrderedIndexData = []
+    self.moodOrderedIndexData = [ .NoSet: [], .Neutral: [], .Good: [], RecordMood.Bad: [] ]
     self.cacheValid = false
     self.dataModel.delegate = self
   }
@@ -176,6 +178,20 @@ class DataModelUIProxy : DataModelDelegate {
     return erlierRecords
   }
   
+  // Mood ordered index accessors
+  func getRecordsCountForMood(mood: RecordMood) -> Int {
+    rebuildDateRecordsCacheIfNecessary()
+    if let indexForMood = self.moodOrderedIndexData[mood] {
+      return indexForMood.count
+    }
+    assert(false)
+  }
+  
+  func getMoodRecordAtIndexForMood(mood: RecordMood, index: Int) -> DiaryRecord {
+    let modelIndex = getModelRecordByMoodOrderedIndex(mood, index: index)
+    return self.dataModel.recordsCollection[modelIndex]
+  }
+  
   func retrieveAllRecordsSortedByCreationDate() -> [DiaryRecord] {
     rebuildDateRecordsCacheIfNecessary()
     var allRecords = self.dataModel.retrieveAllDiaryRecords()
@@ -210,6 +226,15 @@ class DataModelUIProxy : DataModelDelegate {
     return modelIndex
   }
   
+  func getModelRecordByMoodOrderedIndex(mood: RecordMood, index: Int) -> Int {
+    rebuildDateRecordsCacheIfNecessary()
+    if let indexForMood = self.moodOrderedIndexData[mood] {
+      let modelIndex: Int = indexForMood[index]
+      return modelIndex
+    }
+    assert(false, "Invalid erlierId value \(index) or inconsistent index")
+  }
+  
   // MARK: - Implementation
   
   private func rebuildDateRecordsCacheIfNecessary() {
@@ -217,6 +242,7 @@ class DataModelUIProxy : DataModelDelegate {
       NSLog("Rebuilding cache..")
       buildDateCategorizedIndex()
       buildSortedOrderedIndex()
+      buildMoodOredredIndex()
       cacheValid = true
     }
   }
@@ -275,6 +301,17 @@ class DataModelUIProxy : DataModelDelegate {
     })
   }
   
+  func buildMoodOredredIndex() {
+    let allValues: [RecordMood] = [.NoSet, .Neutral, .Bad, .Good]
+    for mood in allValues {
+      self.moodOrderedIndexData[mood]?.removeAll()
+    }
+    let dataRecords = self.dataModel.retrieveAllDiaryRecords()
+    for (index, record) in dataRecords.enumerate() {
+      self.moodOrderedIndexData[record.mood]?.append(index)
+    }
+  }
+  
   // MARK: - DataModelDelegate methods
 
   func dataModelCollectionChanged() -> Void {
@@ -285,6 +322,9 @@ class DataModelUIProxy : DataModelDelegate {
     // TODO: Once DiaryRecord will be correct in NSCopying sense, 
     // we should check whether date changed here!
     if old.creationDate != new.creationDate {
+      self.cacheValid = false
+    }
+    if old.mood != new.mood {
       self.cacheValid = false
     }
   }

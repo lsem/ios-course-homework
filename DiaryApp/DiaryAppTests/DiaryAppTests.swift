@@ -312,6 +312,75 @@ class DiaryAppTests: XCTestCase {
     
   }
   
+  func test_Mood_Categorization_By_Proxy_Model_Should_Work() {
+    let dataModel = DataModel()
+    XCTAssert(dataModel.recordsCount == 0)
+    let dataModelProxy = DataModelUIProxy(dataModel: dataModel)
+    
+    dataModel.addDiaryRecord(DiaryRecord(name: "Sunday", text: "Good day", mood: RecordMood.Good))
+    dataModel.addDiaryRecord(DiaryRecord(name: "Monday", text: "Another Good day", mood: RecordMood.Good))
+    
+    XCTAssert(dataModelProxy.getRecordsCountForMood(.Good) == 2)
+    XCTAssert(dataModelProxy.getRecordsCountForMood(.Bad) == 0)
+    XCTAssert(dataModelProxy.getRecordsCountForMood(.NoSet) == 0)
+    XCTAssert(dataModelProxy.getRecordsCountForMood(.Neutral) == 0)
+    
+    XCTAssert(dataModelProxy.getMoodRecordAtIndexForMood(RecordMood.Good, index: 0).name == "Sunday")
+    XCTAssert(dataModelProxy.getMoodRecordAtIndexForMood(RecordMood.Good, index: 1).name == "Monday")
+
+    dataModel.addDiaryRecord(DiaryRecord(name: "Tuesday", text: "Another Good day", mood: RecordMood.Bad))
+    dataModel.addDiaryRecord(DiaryRecord(name: "Wednesday", text: "Another Good day", mood: RecordMood.Neutral))
+    dataModel.addDiaryRecord(DiaryRecord(name: "Thursday", text: "Another Good day", mood: RecordMood.Neutral))
+
+    XCTAssert(dataModelProxy.getRecordsCountForMood(.Good) == 2)
+    XCTAssert(dataModelProxy.getRecordsCountForMood(.Bad) == 1)
+    XCTAssert(dataModelProxy.getRecordsCountForMood(.NoSet) == 0)
+    XCTAssert(dataModelProxy.getRecordsCountForMood(.Neutral) == 2)
+    XCTAssert(dataModelProxy.getMoodRecordAtIndexForMood(RecordMood.Good, index: 0).name == "Sunday")
+    XCTAssert(dataModelProxy.getMoodRecordAtIndexForMood(RecordMood.Good, index: 1).name == "Monday")
+    XCTAssert(dataModelProxy.getMoodRecordAtIndexForMood(RecordMood.Bad, index: 0).name == "Tuesday")
+    XCTAssert(dataModelProxy.getMoodRecordAtIndexForMood(RecordMood.Neutral, index: 0).name == "Wednesday")
+    XCTAssert(dataModelProxy.getMoodRecordAtIndexForMood(RecordMood.Neutral, index: 1).name == "Thursday")
+    
+    dataModel.addDiaryRecord(DiaryRecord(name: "Friday", text: "Another Good day", mood: RecordMood.NoSet))
+
+    XCTAssert(dataModelProxy.getRecordsCountForMood(.Good) == 2)
+    XCTAssert(dataModelProxy.getRecordsCountForMood(.Bad) == 1)
+    XCTAssert(dataModelProxy.getRecordsCountForMood(.NoSet) == 1)
+    XCTAssert(dataModelProxy.getRecordsCountForMood(.Neutral) == 2)
+    XCTAssert(dataModelProxy.getMoodRecordAtIndexForMood(RecordMood.Good, index: 0).name == "Sunday")
+    XCTAssert(dataModelProxy.getMoodRecordAtIndexForMood(RecordMood.Good, index: 1).name == "Monday")
+    XCTAssert(dataModelProxy.getMoodRecordAtIndexForMood(RecordMood.Bad, index: 0).name == "Tuesday")
+    XCTAssert(dataModelProxy.getMoodRecordAtIndexForMood(RecordMood.Neutral, index: 0).name == "Wednesday")
+    XCTAssert(dataModelProxy.getMoodRecordAtIndexForMood(RecordMood.Neutral, index: 1).name == "Thursday")
+    XCTAssert(dataModelProxy.getMoodRecordAtIndexForMood(RecordMood.NoSet, index: 0).name == "Friday")
+    
+    // Lets remove all neutral records
+    let count = dataModelProxy.getRecordsCountForMood(.Neutral)
+    XCTAssert(count == 2)
+    for _ in 0..<count {
+      let modelId = dataModelProxy.getModelRecordByMoodOrderedIndex(.Neutral, index: 0)
+      NSLog("removing : \(modelId)")
+      dataModel.removeDiaryRecordAt(index: modelId)
+    }
+    // And insert one
+    dataModel.addDiaryRecord(DiaryRecord(name: "Saturday", text: "Another Good day", mood: RecordMood.NoSet))
+    // And update one
+    let firstGoodRecordModelIndex = dataModelProxy.getModelRecordByMoodOrderedIndex(.Good, index: 0)
+    dataModel.updateDiaryRecordAt(index: firstGoodRecordModelIndex) {
+      $0.mood = RecordMood.Bad
+    }
+    XCTAssert(dataModelProxy.getRecordsCountForMood(.Good) == 1)
+    XCTAssert(dataModelProxy.getRecordsCountForMood(.Bad) == 2)
+    XCTAssert(dataModelProxy.getRecordsCountForMood(.NoSet) == 2)
+    XCTAssert(dataModelProxy.getRecordsCountForMood(.Neutral) == 0)
+    XCTAssert(dataModelProxy.getMoodRecordAtIndexForMood(RecordMood.Good, index: 0).name == "Monday")
+    XCTAssert(dataModelProxy.getMoodRecordAtIndexForMood(RecordMood.Bad, index: 0).name == "Sunday")
+    XCTAssert(dataModelProxy.getMoodRecordAtIndexForMood(RecordMood.Bad, index: 1).name == "Tuesday")
+    XCTAssert(dataModelProxy.getMoodRecordAtIndexForMood(RecordMood.NoSet, index: 0).name == "Friday")
+    XCTAssert(dataModelProxy.getMoodRecordAtIndexForMood(RecordMood.NoSet, index: 1).name == "Saturday")
+  }
+  
   func testPerformanceExample() {
     // This is an example of a performance test case.
     self.measureBlock {
