@@ -384,6 +384,79 @@ class DiaryAppTests: XCTestCase {
     XCTAssert(dataModelProxy.getMoodRecordAtIndexForMood(RecordMood.NoSet, index: 1).name == "Saturday")
   }
   
+  enum ModelViewEvent {
+    case SectionCreated(Int)
+    case SectionDestroyed(Int)
+    case RowDeleted(Int, Int)
+    case RowInserted(Int, Int)
+    case RowUpdated(Int, Int)
+  }
+  
+  // Don't be a pussy, do mocking manually!
+  class CreationDateCategorizationDataModelProxyMock : CreationDateCategorizationDataModelProxyDelegate {
+    var events: [ModelViewEvent] = []
+    
+    func clearEvents() { events.removeAll() }
+    
+    
+    func sectionCreated(sectionIndex: Int) -> Void {
+      self.events.append(ModelViewEvent.SectionCreated(sectionIndex))
+    }
+    
+    func sectionDestroyed(sectionIndex: Int) -> Void {
+      self.events.append(ModelViewEvent.SectionDestroyed(sectionIndex))
+    }
+    
+    func rowDeleted(section: Int, row: Int) -> Void {
+      self.events.append(ModelViewEvent.RowDeleted(section, row))
+    }
+    
+    func rowInserted(section: Int, row: Int) -> Void {
+      self.events.append(ModelViewEvent.RowInserted(section, row))
+    }
+    
+    func rowUpdated(section: Int, row: Int) -> Void {
+      self.events.append(ModelViewEvent.RowUpdated(section, row))
+    }
+  }
+  
+  func test_TableView_Proxy_Should_Correctly_Handle_Manipulating_Data_Model() {
+    let dataModel = DataModel()
+    let tableViewProxy = DataModelProxiesFactory.getCreationDateCategorizationDataModelProxy(dataModel: dataModel)
+    let proxyMock = CreationDateCategorizationDataModelProxyMock()
+    tableViewProxy.delegate = proxyMock
+    
+    var passedLeft = 3
+    while passedLeft-- != 0 {
+      
+      let dr = DiaryRecord(name: "Wednesday", text: "", mood: RecordMood.Good)
+      let insertedRecordId = dataModel.addDiaryRecord(dr)
+      
+      XCTAssert(proxyMock.events.count == 1)
+      switch proxyMock.events[0] {
+      case let ModelViewEvent.SectionCreated(sectionIdx):
+        XCTAssert(sectionIdx == 0)
+      default:
+        XCTFail("Unexpected event")
+      }
+      
+      proxyMock.clearEvents()
+      
+      dataModel.removeDiaryRecordByID(insertedRecordId)
+      
+      XCTAssert(proxyMock.events.count == 1)
+      switch proxyMock.events[0] {
+      case let ModelViewEvent.SectionDestroyed(sectionIdx):
+        XCTAssert(sectionIdx == 0)
+      default:
+        XCTFail("Unexpected event")
+      }
+
+      proxyMock.clearEvents()
+    }
+    
+  }
+  
   func testPerformanceExample() {
     // This is an example of a performance test case.
     self.measureBlock {

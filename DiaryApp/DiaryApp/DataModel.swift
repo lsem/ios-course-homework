@@ -471,7 +471,55 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
   
   func compareTableInfos(a a: TableInfo, b: TableInfo, sectionAdded: SectionAddedCB,
       sectionRemoved: SectionRemovedCB, rowInserted: RowInsertedCB, rowRemoved: RowRemovedCB) {
-    
+    let hasDiffs = compareTableInfoForSectionsDiff(a: a, b: b, sectionAdded: sectionAdded, sectionRemoved: sectionRemoved)
+    if hasDiffs {
+      return
+    }
+    compareTableInfoForRowsDiff(a: a, b: b, rowInserted: rowInserted, rowRemoved: rowRemoved)
+  }
+  
+  func compareTableInfoForSectionsDiff(a a: TableInfo, b: TableInfo, sectionAdded: SectionAddedCB, sectionRemoved: SectionRemovedCB) -> Bool {
+    var foundDiffs = false
+    let a_sectionsCategories: [(RecordsCategory, Int)] = a.sections.map() { (sIdx, sInfo) in (sInfo.category, sIdx) }
+    let b_sectionsCategories: [(RecordsCategory, Int)] = b.sections.map() { (sIdx, sInfo) in (sInfo.category, sIdx) }
+    NSLog("Comparing sections. A: '\(a_sectionsCategories)' and B: '\(b_sectionsCategories)'")
+    var DA = Dictionary<RecordsCategory, Int>()
+    var DB = Dictionary<RecordsCategory, Int>()
+    for (category, sectionIdx) in a_sectionsCategories { DA[category] = sectionIdx }
+    for (category, sectionIdx) in b_sectionsCategories { DB[category] = sectionIdx }
+    for (category, sectionIdx) in DA {
+      if DB[category] == nil { sectionRemoved(section: sectionIdx) }
+      DB.removeValueForKey(category)
+      foundDiffs = true
+    }
+    for (_, sectionIdx) in DB { sectionAdded(section: sectionIdx); foundDiffs = true }
+    return foundDiffs
+  }
+  
+  func compareTableInfoForRowsDiff(a a: TableInfo, b: TableInfo, rowInserted: RowInsertedCB, rowRemoved: RowRemovedCB) {
+    // NOTE: Sections should be already checked for equality
+    let sectionsCount = a.sectionsCount
+    assert(a.sections.count == b.sections.count)
+    for sectionIdx in 0..<sectionsCount {
+      let a_sectionInfo = a.sections[sectionIdx]
+      let b_sectionInfo = b.sections[sectionIdx]
+      assert(a_sectionInfo != nil && b_sectionInfo != nil)
+      assert(a_sectionInfo!.category == b_sectionInfo!.category)
+      compareSectionsForRowDiff(section: sectionIdx, a: a_sectionInfo!, b: b_sectionInfo!,
+        rowInserted: rowInserted, rowRemoved: rowRemoved)
+    }
+  }
+  
+  func compareSectionsForRowDiff(section section: Int, a: SectionInfo, b: SectionInfo, rowInserted: RowInsertedCB, rowRemoved: RowRemovedCB)  {
+    var a_rows_hash: Dictionary<Int, DiaryRecord>= [:]
+    var b_rows_hash: Dictionary<Int, DiaryRecord>= [:]
+    for (index, row) in a.rows.enumerate() { a_rows_hash[index] = row }
+    for (index, row) in b.rows.enumerate() { b_rows_hash[index] = row }
+    for (position, _) in a_rows_hash  {
+      if b_rows_hash[position] == nil { rowRemoved(section: section, row: position) }
+      b_rows_hash.removeValueForKey(position)
+    }
+    for (position, _) in b_rows_hash { rowInserted(section: section, row: position) }
   }
   
   var currentTableInfo = TableInfo()
@@ -500,7 +548,7 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
     NSLog("updateCurrentTableInfoIfNecessary: Resolving actual table info")
     let latestTableInfo = resolveActualTableInfo()
     NSLog("updateCurrentTableInfoIfNecessary: Ccompare with existing")
-    compareTableInfos(a: latestTableInfo, b: self.currentTableInfo,
+    compareTableInfos(a: self.currentTableInfo, b: latestTableInfo,
       sectionAdded: { (section: Int) in
         NSLog("Section Created: \(section)")
         self.notifySectionCreated(section)
@@ -518,6 +566,7 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
         self.notifyRowDeleted(section, row: row)
       }
     )
+    self.currentTableInfo = latestTableInfo
   }
   
   // MARK: - DataModelUIProxyDelegate
@@ -566,6 +615,7 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
   
   init(proxy: DataModelUIProxy) {
     self.proxy = proxy
+    self.proxy.delegate = self
     self.delegate = nil
   }
   
@@ -672,14 +722,14 @@ class MoodCategorizationDataModelProxy {
 }
 
 class DataModelProxiesFactory {
-  static let proxy = DataModelUIProxy(dataModel: DataModel.sharedInstance)
-  
-  static func getCreationDateCategorizationDataModelProxy() -> CreationDateCategorizationDataModelProxy {
-    return CreationDateCategorizationDataModelProxy(proxy: self.proxy)
+  static func getCreationDateCategorizationDataModelProxy(dataModel dataModel: DataModel) -> CreationDateCategorizationDataModelProxy {
+    let proxy = DataModelUIProxy(dataModel: dataModel)
+    return CreationDateCategorizationDataModelProxy(proxy: proxy)
   }
   
-  static func getMoodCategirizationDataModelProxy() -> MoodCategorizationDataModelProxy {
-    return MoodCategorizationDataModelProxy(proxy: self.proxy)
+  static func getMoodCategirizationDataModelProxy(dataModel: DataModel) -> MoodCategorizationDataModelProxy {
+    let proxy = DataModelUIProxy(dataModel: dataModel)
+    return MoodCategorizationDataModelProxy(proxy: proxy)
   }
 }
 
