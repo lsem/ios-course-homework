@@ -17,7 +17,7 @@ class MasterViewController: UITableViewController, CreationDateCategorizationVie
   var detailViewController: DetailViewController? = nil
   var settingsViewController: SettingsViewController?
   var needToReloadData: Bool = false
-  let tableViewProxy: CreationDateCategorizationViewModel =
+  let tableViewModel: CreationDateCategorizationViewModel =
       ViewModelsFactory.getCreationDateCategorizationViewModel(dataModel: DataModel.sharedInstance)
   
   @IBAction func unwindToContainerVC(segue: UIStoryboardSegue) {
@@ -27,12 +27,18 @@ class MasterViewController: UITableViewController, CreationDateCategorizationVie
   
   override func viewDidLoad() {
     super.viewDidLoad()
-    tableViewProxy.delegate = self
-    tableViewProxy.synchronizeWithExistingData()
+    prepareTableViewViewModel()
     subscribeOnAppSettingsChanges()
     createSettingsButton()
     createNewRecordButton()
     setupUIAccordingToAppConfiguration()
+  }
+  
+  func prepareTableViewViewModel() {
+    // Start listeting on events
+    tableViewModel.delegate = self
+    // Pump in events on all currenly available data
+    tableViewModel.synchronizeWithExistingData()
   }
   
   func acceptApplicationSettingsChangeIfNecessary() {
@@ -95,7 +101,7 @@ class MasterViewController: UITableViewController, CreationDateCategorizationVie
   override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
     if segue.identifier == "showDetail" {
       if let indexPath = self.tableView.indexPathForSelectedRow {
-        let recordModelId = self.tableViewProxy.getDiaryRecordIdForIndexPath(indexPath)
+        let recordModelId = self.tableViewModel.getDiaryRecordIdForIndexPath(indexPath)
         let detailController = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
         detailController.recordModelId = recordModelId
         detailController.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
@@ -128,15 +134,15 @@ class MasterViewController: UITableViewController, CreationDateCategorizationVie
 //  }
   
   override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-     return self.tableViewProxy.getSectionsCount()
+     return self.tableViewModel.getSectionsCount()
   }
 
   override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-    return self.tableViewProxy.getSectionNameByIndex(section)
+    return self.tableViewModel.getSectionNameByIndex(section)
   }
   
   override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    return self.tableViewProxy.getSectionRowsCountBySection(section)
+    return self.tableViewModel.getSectionRowsCountBySection(section)
   }
   
   func prepareCell(cell: UITableViewCell, forRecord record: DiaryRecord) -> UITableViewCell {
@@ -157,7 +163,7 @@ class MasterViewController: UITableViewController, CreationDateCategorizationVie
   
   override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
     let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
-    let record = self.tableViewProxy.getDiaryRecordByIndexPath(indexPath)
+    let record = self.tableViewModel.getDiaryRecordByIndexPath(indexPath)
     return prepareCell(cell, forRecord: record)
   }
   
@@ -168,7 +174,7 @@ class MasterViewController: UITableViewController, CreationDateCategorizationVie
   
   override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
     if editingStyle == .Delete {
-      let recordId = self.tableViewProxy.getDiaryRecordIdForIndexPath(indexPath)
+      let recordId = self.tableViewModel.getDiaryRecordIdForIndexPath(indexPath)
       DataModel.sharedInstance.removeDiaryRecordByID(recordId)
     } else if editingStyle == .Insert {
        // ..
