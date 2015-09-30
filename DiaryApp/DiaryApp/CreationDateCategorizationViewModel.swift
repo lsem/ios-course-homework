@@ -16,6 +16,16 @@ protocol CreationDateCategorizationViewModelDelegate : class {
   func rowUpdated(section: Int, row: Int) -> Void
 }
 
+// Instance of this class responsible for supporting UITableView with
+// dynamically managed section. I.e if there are only today records, we have one section with index 0
+// and it has appropriate header. If we add one more record into this week section, we have two sections
+// where section 0 become ThisWeek and section 1 becomes today. So that, required functionality is
+// providing actual information about number of sections, rows for each section, titles, etc.
+// As well as notifiying UITableViewController about changes in structure. 
+// Better implementation would more acurately keep track of its indices but this
+// one do it somewhat wrong: on each change it makes difference between previous and current datamodel 
+// (which should be read from indexing proxy). Even this is not coded in efficient way, but it can be in most cases
+// if it will be needed. Important is that it looks correct and it has few tests proving this.
 class CreationDateCategorizationViewModel: DataModelIndexingProxyDelegate {
   let proxy: DataModelIndexingProxy
   weak var delegate: CreationDateCategorizationViewModelDelegate?
