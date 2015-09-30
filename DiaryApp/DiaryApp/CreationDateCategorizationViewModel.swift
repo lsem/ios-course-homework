@@ -19,10 +19,29 @@ protocol CreationDateCategorizationViewModelDelegate : class {
 class CreationDateCategorizationViewModel: DataModelIndexingProxyDelegate {
   let proxy: DataModelIndexingProxy
   weak var delegate: CreationDateCategorizationViewModelDelegate?
+  var currentTableInfo = TableInfo()
   
   enum RecordsCategory { case Today; case ThisWeek; case Erlier }
   
   // MARK: - Interface
+  
+  init(proxy: DataModelIndexingProxy) {
+    self.proxy = proxy
+    self.proxy.delegate = self
+    self.delegate = nil
+  }
+  
+  func getSectionsCount() -> Int {
+    return doGetNumberOfSections()
+  }
+  
+  func getSectionNameByIndex(section: Int) -> String {
+    return doGetSectionHeaderTitle(section)
+  }
+  
+  func getSectionRowsCountBySection(section: Int) -> Int {
+    return doGetRowsCountForSection(section)
+  }
   
   // Method needed to pump initial events records when data loaded form external source
   // while delegate was not listening for events. So that, by calling this methods
@@ -46,16 +65,9 @@ class CreationDateCategorizationViewModel: DataModelIndexingProxyDelegate {
     }
   }
   
-  class TableInfo : NSObject, NSCopying {
+  class TableInfo {
     var sectionsCount: Int = 0
     var sections: [Int: SectionInfo] = [:]
-    
-    func copyWithZone(zone: NSZone) -> AnyObject {
-      let newTableInfo = TableInfo()
-      newTableInfo.sectionsCount = self.sectionsCount
-      newTableInfo.sections = self.sections
-      return newTableInfo
-    }
   }
   
   typealias SectionAddedCB = (section: Int) -> Void
@@ -141,8 +153,6 @@ class CreationDateCategorizationViewModel: DataModelIndexingProxyDelegate {
     }
   }
   
-  var currentTableInfo = TableInfo()
-  
   func resolveActualTableInfo() -> TableInfo {
     let actualTableInfo = TableInfo()
     actualTableInfo.sectionsCount = doGetNumberOfSections()
@@ -184,55 +194,6 @@ class CreationDateCategorizationViewModel: DataModelIndexingProxyDelegate {
   func recordRemoved(id: RecordID) -> Void {
     updateCurrentTableInfoIfNecessary()
   }
-  
-  func notifySectionCreated(sectionIndex: Int) {
-    if self.delegate != nil {
-      self.delegate?.sectionCreated(sectionIndex)
-    }
-  }
-  
-  func notifySectionDestroyed(sectionIndex: Int) {
-    if self.delegate != nil {
-      self.delegate?.sectionDestroyed(sectionIndex)
-    }
-  }
-  
-  func notifyRowDeleted(section: Int, row: Int, lastRecord: Bool) {
-    if self.delegate != nil {
-      self.delegate?.rowDeleted(section, row: row, lastRecord: lastRecord)
-    }
-  }
-  
-  func notifyRowInserted(section: Int, row: Int) {
-    if self.delegate != nil {
-      self.delegate?.rowInserted(section, row: row)
-    }
-  }
-  func notifyRowUpdated(section: Int, row: Int) {
-    if self.delegate != nil {
-      self.delegate?.rowUpdated(section, row: row)
-    }
-  }
-  
-  init(proxy: DataModelIndexingProxy) {
-    self.proxy = proxy
-    self.proxy.delegate = self
-    self.delegate = nil
-  }
-  
-  func getSectionsCount() -> Int {
-    return doGetNumberOfSections()
-  }
-  
-  func getSectionNameByIndex(section: Int) -> String {
-    return doGetSectionHeaderTitle(section)
-  }
-  
-  func getSectionRowsCountBySection(section: Int) -> Int {
-    return doGetRowsCountForSection(section)
-  }
-  
-  // MARK: - Internal
   
   func decodeRecordCategoryForSection(section: Int) -> RecordsCategory {
     let todayRecordsCount = self.proxy.todayRecordsCount
@@ -308,6 +269,36 @@ class CreationDateCategorizationViewModel: DataModelIndexingProxyDelegate {
     case .Today: return "Today"
     case .ThisWeek: return "This Week"
     case .Erlier: return "Erlier"
+    }
+  }
+  
+  // MARK: - Notification Helpers
+  func notifySectionCreated(sectionIndex: Int) {
+    if self.delegate != nil {
+      self.delegate?.sectionCreated(sectionIndex)
+    }
+  }
+  
+  func notifySectionDestroyed(sectionIndex: Int) {
+    if self.delegate != nil {
+      self.delegate?.sectionDestroyed(sectionIndex)
+    }
+  }
+  
+  func notifyRowDeleted(section: Int, row: Int, lastRecord: Bool) {
+    if self.delegate != nil {
+      self.delegate?.rowDeleted(section, row: row, lastRecord: lastRecord)
+    }
+  }
+  
+  func notifyRowInserted(section: Int, row: Int) {
+    if self.delegate != nil {
+      self.delegate?.rowInserted(section, row: row)
+    }
+  }
+  func notifyRowUpdated(section: Int, row: Int) {
+    if self.delegate != nil {
+      self.delegate?.rowUpdated(section, row: row)
     }
   }
 }
