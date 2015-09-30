@@ -164,13 +164,13 @@ class DataModelUIProxy : DataModelDelegate {
     return reocord
   }
   
-  func retrieveTodayRecords() -> [DiaryRecord] {
+  func retrieveTodayRecords() -> [(RecordID, DiaryRecord)] {
     rebuildDateRecordsCacheIfNecessary()
     // TODO: Reserve memory for ahead
-    var todayRecords: Array<DiaryRecord> = []
+    var todayRecords: Array<(RecordID, DiaryRecord)> = []
     for recordId in self.todayRecordsIndex {
       if let record = self.dataModel.retrieveDiaryRecordByID(recordId) {
-        todayRecords.append(record)
+        todayRecords.append((recordId,record))
       } else {
         assert(false, "Inconsistency in index")
       }
@@ -191,14 +191,14 @@ class DataModelUIProxy : DataModelDelegate {
     return record!
   }
   
-  func retrieveTheseWeekRecords() -> [DiaryRecord] {
+  func retrieveTheseWeekRecords() -> [(RecordID, DiaryRecord)] {
     rebuildDateRecordsCacheIfNecessary()
     // TODO: Reserve memory for ahead
-    var weekRecords: Array<DiaryRecord> = []
+    var weekRecords: Array<(RecordID, DiaryRecord)> = []
     for recordId in self.thisWeekRecordsIndex {
       let record = self.dataModel.retrieveDiaryRecordByID(recordId)
       assert(record != nil, "Inconsistency of Index")
-      weekRecords.append(record!)
+      weekRecords.append((recordId,record!))
     }
     return weekRecords
   }
@@ -216,14 +216,14 @@ class DataModelUIProxy : DataModelDelegate {
     return record!
   }  
   
-  func retrieveErlierRecords() -> [DiaryRecord] {
+  func retrieveErlierRecords() -> [(RecordID, DiaryRecord)] {
     rebuildDateRecordsCacheIfNecessary()
     // TODO: Reserve memory for ahead
-    var erlierRecords: Array<DiaryRecord> = []
+    var erlierRecords: Array<(RecordID, DiaryRecord)> = []
     for recordId in self.erlierRecordsIndex {
       let record = self.dataModel.retrieveDiaryRecordByID(recordId)
       assert(record != nil, "Inconsistency of Index")
-      erlierRecords.append(record!)
+      erlierRecords.append((recordId, record!))
     }
     return erlierRecords
   }
@@ -329,7 +329,8 @@ class DataModelUIProxy : DataModelDelegate {
     self.todayRecordsIndex.removeAll()
     self.thisWeekRecordsIndex.removeAll()
     self.erlierRecordsIndex.removeAll()
-    for (recordID, record) in self.dataModel.retrieveAllDiaryRecords() {
+    let allRecords = self.dataModel.retrieveAllDiaryRecords()
+    for (recordID, record) in allRecords {
       let today = NSDate()
       if areDateDaysSame(today, asDate: record.creationDate) {
         self.todayRecordsIndex.append(recordID)
@@ -339,6 +340,17 @@ class DataModelUIProxy : DataModelDelegate {
         self.erlierRecordsIndex.append(recordID)
       }
     }
+    // Inside each section, we want to have records sorted
+    self.todayRecordsIndex.sortInPlace() {
+      return allRecords[$0]!.creationDate < allRecords[$1]!.creationDate
+    }
+    self.thisWeekRecordsIndex.sortInPlace() {
+      return allRecords[$0]!.creationDate < allRecords[$1]!.creationDate
+    }
+    self.erlierRecordsIndex.sortInPlace() {
+      return allRecords[$0]!.creationDate < allRecords[$1]!.creationDate
+    }
+
     NSLog("DateCategorized cache has been updated:")
     NSLog("todayRecordsIndex: \(todayRecordsIndex)")
     NSLog("thisWeekRecordsIndex: \(thisWeekRecordsIndex)")
@@ -443,9 +455,9 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
   struct SectionInfo {
     let rowsCount: Int
     let category: RecordsCategory
-    let rows: [DiaryRecord]
+    let rows: [(RecordID, DiaryRecord)]
     
-    init(rowsCount: Int, category: RecordsCategory, rows: [DiaryRecord]) {
+    init(rowsCount: Int, category: RecordsCategory, rows: [(RecordID, DiaryRecord)]) {
       self.rowsCount = rowsCount
       self.category = category
       self.rows = rows
@@ -471,14 +483,18 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
   
   func compareTableInfos(a a: TableInfo, b: TableInfo, sectionAdded: SectionAddedCB,
       sectionRemoved: SectionRemovedCB, rowInserted: RowInsertedCB, rowRemoved: RowRemovedCB) {
-    let hasDiffs = compareTableInfoForSectionsDiff(a: a, b: b, sectionAdded: sectionAdded, sectionRemoved: sectionRemoved)
+    let hasDiffs = compareTableInfoForSectionsDiff(a: a, b: b, sectionAdded: sectionAdded,
+      sectionRemoved: sectionRemoved, rowInserted: rowInserted, rowRemoved: rowRemoved)
     if hasDiffs {
       return
     }
+        
+    // Check rows structure for non-changed sections
     compareTableInfoForRowsDiff(a: a, b: b, rowInserted: rowInserted, rowRemoved: rowRemoved)
   }
   
-  func compareTableInfoForSectionsDiff(a a: TableInfo, b: TableInfo, sectionAdded: SectionAddedCB, sectionRemoved: SectionRemovedCB) -> Bool {
+  func compareTableInfoForSectionsDiff(a a: TableInfo, b: TableInfo, sectionAdded: SectionAddedCB, sectionRemoved: SectionRemovedCB,
+      rowInserted: RowInsertedCB, rowRemoved: RowRemovedCB) -> Bool {
     var foundDiffs = false
     let a_sectionsCategories: [(RecordsCategory, Int)] = a.sections.map() { (sIdx, sInfo) in (sInfo.category, sIdx) }
     let b_sectionsCategories: [(RecordsCategory, Int)] = b.sections.map() { (sIdx, sInfo) in (sInfo.category, sIdx) }
@@ -488,15 +504,29 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
     for (category, sectionIdx) in a_sectionsCategories { DA[category] = sectionIdx }
     for (category, sectionIdx) in b_sectionsCategories { DB[category] = sectionIdx }
     for (category, sectionIdx) in DA {
-      if DB[category] == nil { sectionRemoved(section: sectionIdx) }
+      if DB[category] == nil {
+        // Befire section removed, all records removed
+        for (rowIdx, _) in a.sections[sectionIdx]!.rows.enumerate() {
+          rowRemoved(section: sectionIdx, row: rowIdx)
+        }
+        sectionRemoved(section: sectionIdx)
+        foundDiffs = true
+      }
       DB.removeValueForKey(category)
+    }
+    for (_, sectionIdx) in DB {
+      sectionAdded(section: sectionIdx);
+      // Notfify also about rows added to this section
+      for (rowIdx, _) in b.sections[sectionIdx]!.rows.enumerate() {
+        rowInserted(section: sectionIdx, row: rowIdx)
+      }
       foundDiffs = true
     }
-    for (_, sectionIdx) in DB { sectionAdded(section: sectionIdx); foundDiffs = true }
     return foundDiffs
   }
   
   func compareTableInfoForRowsDiff(a a: TableInfo, b: TableInfo, rowInserted: RowInsertedCB, rowRemoved: RowRemovedCB) {
+    NSLog("compareTableInfoForRowsDiff")
     // NOTE: Sections should be already checked for equality
     let sectionsCount = a.sectionsCount
     assert(a.sections.count == b.sections.count)
@@ -511,15 +541,24 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
   }
   
   func compareSectionsForRowDiff(section section: Int, a: SectionInfo, b: SectionInfo, rowInserted: RowInsertedCB, rowRemoved: RowRemovedCB)  {
-    var a_rows_hash: Dictionary<Int, DiaryRecord>= [:]
-    var b_rows_hash: Dictionary<Int, DiaryRecord>= [:]
-    for (index, row) in a.rows.enumerate() { a_rows_hash[index] = row }
-    for (index, row) in b.rows.enumerate() { b_rows_hash[index] = row }
-    for (position, _) in a_rows_hash  {
-      if b_rows_hash[position] == nil { rowRemoved(section: section, row: position) }
-      b_rows_hash.removeValueForKey(position)
+    typealias RecordPosition = Int
+    var a_rows_hash: Dictionary<Int, (RecordID, (RecordPosition, DiaryRecord))>= [:]
+    var b_rows_hash: Dictionary<Int, (RecordID, (RecordPosition, DiaryRecord))>= [:]
+    NSLog("compareSectionsForRowDiff: a.rows: \(a.rows)")
+    NSLog("compareSectionsForRowDiff: b.rows: \(a.rows)")
+    for (index, row) in a.rows.enumerate() { a_rows_hash[row.0] = (index, row) }
+    for (index, row) in b.rows.enumerate() { b_rows_hash[row.0] = (index, row) }
+    for (modelId, rowRec) in a_rows_hash  {
+      if b_rows_hash[modelId] == nil {
+        let position = rowRec.0
+        rowRemoved(section: section, row: position)
+      }
+      b_rows_hash.removeValueForKey(modelId)
     }
-    for (position, _) in b_rows_hash { rowInserted(section: section, row: position) }
+    for (/*modelId*/_, rowRec) in b_rows_hash {
+      let position = rowRec.0
+      rowInserted(section: section, row: position)
+    }
   }
   
   var currentTableInfo = TableInfo()
@@ -529,7 +568,7 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
     actualTableInfo.sectionsCount = doGetNumberOfSections()
     for sectionIdx in 0..<actualTableInfo.sectionsCount {
       let category = decodeRecordCategoryForSection(sectionIdx)
-      var rows: [DiaryRecord]? = nil
+      var rows: [(RecordID, DiaryRecord)]? = nil
       switch category {
       case .Today:
         rows = self.proxy.retrieveTodayRecords()

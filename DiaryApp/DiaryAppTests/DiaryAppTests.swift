@@ -207,8 +207,8 @@ class DiaryAppTests: XCTestCase {
     XCTAssert(dataModelProxy.retrieveTodayRecords().count == 2)
     
     // And check also what it fact it returns
-    XCTAssert(dataModelProxy.retrieveTodayRecords()[0].name == "Sunday")
-    XCTAssert(dataModelProxy.retrieveTodayRecords()[1].name == "Monday")
+    XCTAssert(dataModelProxy.retrieveTodayRecords()[0].1.name == "Sunday")
+    XCTAssert(dataModelProxy.retrieveTodayRecords()[1].1.name == "Monday")
   }
   
   static func dateWithDaysAdded(date: NSDate, days: Int) -> NSDate {
@@ -220,6 +220,12 @@ class DiaryAppTests: XCTestCase {
     let secondsTotal: NSTimeInterval = 60.0 * 60.0 * Double(hours)
     return date.dateByAddingTimeInterval(secondsTotal)
   }
+
+  static func dateWithSecondsAdded(date: NSDate, seconds: Int) -> NSDate {
+    let secondsTotal: NSTimeInterval = Double(seconds)
+    return date.dateByAddingTimeInterval(secondsTotal)
+  }
+  
   
   func test_DataModelProxy_Should_Update_Itself_Correctly_After_DataModel_Records_Update_Delete_Insert() {
     let dataModel = DataModel()
@@ -238,8 +244,8 @@ class DiaryAppTests: XCTestCase {
       XCTAssert(dataModelProxy.retrieveTodayRecords().count == 2)
       XCTAssert(dataModelProxy.retrieveAllRecordsSortedByCreationDate().count == 2)
       let dateOrderedIndex = dataModelProxy.retrieveAllRecordsSortedByCreationDate()
-      XCTAssert(dataModelProxy.retrieveTodayRecords()[0].name == "Sunday")
-      XCTAssert(dataModelProxy.retrieveTodayRecords()[1].name == "Monday")
+      XCTAssert(dataModelProxy.retrieveTodayRecords()[0].1.name == "Sunday")
+      XCTAssert(dataModelProxy.retrieveTodayRecords()[1].1.name == "Monday")
       XCTAssert(dateOrderedIndex[0].name == "Sunday")
       XCTAssert(dateOrderedIndex[1].name == "Monday")
       
@@ -254,8 +260,8 @@ class DiaryAppTests: XCTestCase {
       let sorted = dataModelProxy.retrieveAllRecordsSortedByCreationDate()
       XCTAssert(sorted.count == 2)
       let dateOrderedIndexAftedUpdated = dataModelProxy.retrieveAllRecordsSortedByCreationDate()
-      XCTAssert(dataModelProxy.retrieveTodayRecords()[0].name == "Sunday")
-      XCTAssert(dataModelProxy.retrieveErlierRecords()[0].name == "Monday")
+      XCTAssert(dataModelProxy.retrieveTodayRecords()[0].1.name == "Sunday")
+      XCTAssert(dataModelProxy.retrieveErlierRecords()[0].1.name == "Monday")
       XCTAssert(dateOrderedIndexAftedUpdated[0].name == "Monday")
       XCTAssert(dateOrderedIndexAftedUpdated[1].name == "Sunday")
 
@@ -269,8 +275,8 @@ class DiaryAppTests: XCTestCase {
       XCTAssert(dataModelProxy.retrieveTodayRecords().count == 2)
       XCTAssert(dataModelProxy.retrieveAllRecordsSortedByCreationDate().count == 2)
       let dateOrderedIndexAftertTwoUpdates = dataModelProxy.retrieveAllRecordsSortedByCreationDate()
-      XCTAssert(dataModelProxy.retrieveTodayRecords()[0].name == "Sunday")
-      XCTAssert(dataModelProxy.retrieveTodayRecords()[1].name == "Monday")
+      XCTAssert(dataModelProxy.retrieveTodayRecords()[0].1.name == "Sunday")
+      XCTAssert(dataModelProxy.retrieveTodayRecords()[1].1.name == "Monday")
       XCTAssert(dateOrderedIndexAftertTwoUpdates[0].name == "Sunday")
       XCTAssert(dateOrderedIndexAftertTwoUpdates[1].name == "Monday")
       
@@ -282,7 +288,7 @@ class DiaryAppTests: XCTestCase {
       XCTAssert(dataModelProxy.retrieveTodayRecords().count == 1)
       XCTAssert(dataModelProxy.retrieveAllRecordsSortedByCreationDate().count == 1)
       let dateOrderedIndexAftertRemove = dataModelProxy.retrieveAllRecordsSortedByCreationDate()
-      XCTAssert(dataModelProxy.retrieveTodayRecords()[0].name == "Monday")
+      XCTAssert(dataModelProxy.retrieveTodayRecords()[0].1.name == "Monday")
       XCTAssert(dateOrderedIndexAftertRemove[0].name == "Monday")
       // Remove latest
       dataModel.removeDiaryRecordByID(mondayRecordId) // remove Mondays record
@@ -395,32 +401,89 @@ class DiaryAppTests: XCTestCase {
   // Don't be a pussy, do mocking manually!
   class CreationDateCategorizationDataModelProxyMock : CreationDateCategorizationDataModelProxyDelegate {
     var events: [ModelViewEvent] = []
+    var sectionsCreatedCount = 0
+    var sectionsDestroyedCount = 0
+    var rowsDeletedCount = 0
+    var rowsInsetedCount = 0
+    var rowsUpdatedCount = 0
+
+    var sectionCreatedEventsArray_: [Int] = []
+    var sectionRemovedEventsArray_: [Int] = []
+    var rowsDeletedEventsArray_: [(Int, Int)] = []
+    var rowsInsertedEventsArray_: [(Int, Int)] = []
+    var rowsUpdatedEventsArray_: [(Int, Int)] = []
+
+    var eventsCount: Int { get { return self.events.count } }
     
+    var sectionCreatedEventsArray: [Int] { get { categorizeEvents(); return sectionCreatedEventsArray_ } }
+    var sectionRemovedEventsArray: [Int]  { get { categorizeEvents(); return sectionRemovedEventsArray_ } }
+    var rowsDeletedEventsArray: [(Int, Int)]  { get { categorizeEvents(); return rowsDeletedEventsArray_ } }
+    var rowsInsertedEventsArray: [(Int, Int)]  { get { categorizeEvents(); return rowsInsertedEventsArray_ } }
+    var rowsUpdatedEventsArray: [(Int, Int)]  { get { categorizeEvents(); return rowsUpdatedEventsArray_ } }
+    
+    func categorizeEvents() {
+      self.sectionCreatedEventsArray_.removeAll()
+      self.sectionRemovedEventsArray_.removeAll()
+      self.rowsDeletedEventsArray_.removeAll()
+      self.rowsInsertedEventsArray_.removeAll()
+      self.rowsUpdatedEventsArray_.removeAll()
+      for event in self.events {
+        switch event {
+        case let .SectionCreated(sectionIdx): self.sectionCreatedEventsArray_.append(sectionIdx)
+        case let .SectionDestroyed(sectionIdx): self.sectionRemovedEventsArray_.append(sectionIdx)
+        case let .RowDeleted(sectionIdx, rowIdx): self.rowsDeletedEventsArray_.append((sectionIdx, rowIdx))
+        case let .RowInserted(sectionIdx, rowIdx): self.rowsInsertedEventsArray_.append((sectionIdx, rowIdx))
+        case let .RowUpdated(sectionIdx, rowIdx): self.rowsUpdatedEventsArray_.append((sectionIdx, rowIdx))
+        }
+      }
+    }
+  
     func clearEvents() { events.removeAll() }
-    
     
     func sectionCreated(sectionIndex: Int) -> Void {
       self.events.append(ModelViewEvent.SectionCreated(sectionIndex))
+      self.sectionsCreatedCount += 1
     }
     
     func sectionDestroyed(sectionIndex: Int) -> Void {
       self.events.append(ModelViewEvent.SectionDestroyed(sectionIndex))
+      self.sectionsDestroyedCount += 1
     }
     
     func rowDeleted(section: Int, row: Int) -> Void {
       self.events.append(ModelViewEvent.RowDeleted(section, row))
+      self.rowsDeletedCount += 1
     }
     
     func rowInserted(section: Int, row: Int) -> Void {
       self.events.append(ModelViewEvent.RowInserted(section, row))
+      self.rowsInsetedCount += 1
     }
     
     func rowUpdated(section: Int, row: Int) -> Void {
       self.events.append(ModelViewEvent.RowUpdated(section, row))
+      self.rowsUpdatedCount += 1
     }
   }
   
   func test_TableView_Proxy_Should_Correctly_Handle_Manipulating_Data_Model() {
+    // TODO: PLEASE, REWRITE THIS TO MORE DSL-ISH STYLE.
+    // TODO: PLEASE, REWRITE THIS TO MORE DSL-ISH STYLE.
+    // TODO: PLEASE, REWRITE THIS TO MORE DSL-ISH STYLE.
+    // TODO: PLEASE, REWRITE THIS TO MORE DSL-ISH STYLE.
+    // TODO: PLEASE, REWRITE THIS TO MORE DSL-ISH STYLE.
+    // TODO: PLEASE, REWRITE THIS TO MORE DSL-ISH STYLE.
+    // TODO: PLEASE, REWRITE THIS TO MORE DSL-ISH STYLE.
+    // TODO: PLEASE, REWRITE THIS TO MORE DSL-ISH STYLE.
+    // TODO: PLEASE, REWRITE THIS TO MORE DSL-ISH STYLE.
+    // TODO: PLEASE, REWRITE THIS TO MORE DSL-ISH STYLE.
+    // TODO: PLEASE, REWRITE THIS TO MORE DSL-ISH STYLE.
+    // TODO: PLEASE, REWRITE THIS TO MORE DSL-ISH STYLE.
+    // TODO: PLEASE, REWRITE THIS TO MORE DSL-ISH STYLE.
+    // TODO: PLEASE, REWRITE THIS TO MORE DSL-ISH STYLE.
+    // TODO: PLEASE, REWRITE THIS TO MORE DSL-ISH STYLE.
+    // TODO: PLEASE, REWRITE THIS TO MORE DSL-ISH STYLE.
+    
     let dataModel = DataModel()
     let tableViewProxy = DataModelProxiesFactory.getCreationDateCategorizationDataModelProxy(dataModel: dataModel)
     let proxyMock = CreationDateCategorizationDataModelProxyMock()
@@ -429,32 +492,38 @@ class DiaryAppTests: XCTestCase {
     var passedLeft = 3
     while passedLeft-- != 0 {
       
-      let dr = DiaryRecord(name: "Wednesday", text: "", mood: RecordMood.Good)
-      let insertedRecordId = dataModel.addDiaryRecord(dr)
+      let wednesdayRecordId = dataModel.addDiaryRecord(DiaryRecord(name: "Wednesday", text: "", mood: RecordMood.Good))
+      let thursdayDate = DiaryAppTests.dateWithSecondsAdded(NSDate(), seconds: +10)
+      let thursdayRecordId = dataModel.addDiaryRecord(
+        DiaryRecord(name: "Trhursday", text: "", mood: RecordMood.Good, creationDate: thursdayDate))
       
-      XCTAssert(proxyMock.events.count == 1)
-      switch proxyMock.events[0] {
-      case let ModelViewEvent.SectionCreated(sectionIdx):
-        XCTAssert(sectionIdx == 0)
-      default:
-        XCTFail("Unexpected event")
-      }
-      
-      proxyMock.clearEvents()
-      
-      dataModel.removeDiaryRecordByID(insertedRecordId)
-      
-      XCTAssert(proxyMock.events.count == 1)
-      switch proxyMock.events[0] {
-      case let ModelViewEvent.SectionDestroyed(sectionIdx):
-        XCTAssert(sectionIdx == 0)
-      default:
-        XCTFail("Unexpected event")
-      }
+      XCTAssert(proxyMock.eventsCount == 3)
+      XCTAssert(proxyMock.sectionCreatedEventsArray[0] == 0/*section idx*/)
+      XCTAssert(proxyMock.rowsInsertedEventsArray[0].0 == 0 /*section idx*/)
+      XCTAssert(proxyMock.rowsInsertedEventsArray[0].1 == 0 /*row idx*/)
+      XCTAssert(proxyMock.rowsInsertedEventsArray[1].0 == 0 /*section idx*/)
+      XCTAssert(proxyMock.rowsInsertedEventsArray[1].1 == 1 /*row idx*/)
 
       proxyMock.clearEvents()
+      
+      // Remove wednesday
+      dataModel.removeDiaryRecordByID(wednesdayRecordId)
+
+      XCTAssert(proxyMock.eventsCount == 1)
+      XCTAssert(proxyMock.rowsDeletedEventsArray[0].0 == 0/*section idx*/)
+      XCTAssert(proxyMock.rowsDeletedEventsArray[0].1 == 0/*row idx*/)
+      
+      proxyMock.clearEvents()
+      
+      dataModel.removeDiaryRecordByID(thursdayRecordId)
+      
+      XCTAssert(proxyMock.eventsCount == 2)
+      XCTAssert(proxyMock.rowsDeletedEventsArray[0].0 == 0/*section idx*/)
+      XCTAssert(proxyMock.rowsDeletedEventsArray[0].0 == 0/*row idx*/)
+      XCTAssert(proxyMock.sectionRemovedEventsArray[0] == 0/*section idx*/)
+      
+      proxyMock.clearEvents()
     }
-    
   }
   
   func testPerformanceExample() {
