@@ -187,7 +187,7 @@ class DiaryAppTests: XCTestCase {
   func test_UIDataModel_Proxy_Date_Categorizing_Should_Work() {
     let dataModel = DataModel()
     XCTAssert(dataModel.recordsCount == 0)
-    let dataModelProxy = DataModelUIProxy(dataModel: dataModel)
+    let dataModelProxy = DataModelIndexingProxy(dataModel: dataModel)
     
     // Check currently proxy does not return any data
     XCTAssert(dataModelProxy.retrieveErlierRecords().count == 0)
@@ -230,7 +230,7 @@ class DiaryAppTests: XCTestCase {
   func test_DataModelProxy_Should_Update_Itself_Correctly_After_DataModel_Records_Update_Delete_Insert() {
     let dataModel = DataModel()
     XCTAssert(dataModel.recordsCount == 0)
-    let dataModelProxy = DataModelUIProxy(dataModel: dataModel)
+    let dataModelProxy = DataModelIndexingProxy(dataModel: dataModel)
 
     // Make all tests two passes on the same instance to verify it can work properly after full usage cycle
     var passesLeft = 2
@@ -302,7 +302,7 @@ class DiaryAppTests: XCTestCase {
   func test_Queries_To_Proxy_Model_For_Model_Data_Indices_Should_Work_Correctly() {
     let dataModel = DataModel()
     XCTAssert(dataModel.recordsCount == 0)
-    let dataModelProxy = DataModelUIProxy(dataModel: dataModel)
+    let dataModelProxy = DataModelIndexingProxy(dataModel: dataModel)
     
     dataModel.addDiaryRecord(DiaryRecord(name: "Sunday", text: "Good day", mood: RecordMood.Good))
     dataModel.addDiaryRecord(DiaryRecord(name: "Monday", text: "Another Good day", mood: RecordMood.Good))
@@ -323,7 +323,7 @@ class DiaryAppTests: XCTestCase {
   func test_Mood_Categorization_By_Proxy_Model_Should_Work() {
     let dataModel = DataModel()
     XCTAssert(dataModel.recordsCount == 0)
-    let dataModelProxy = DataModelUIProxy(dataModel: dataModel)
+    let dataModelProxy = DataModelIndexingProxy(dataModel: dataModel)
     
     dataModel.addDiaryRecord(DiaryRecord(name: "Sunday", text: "Good day", mood: RecordMood.Good))
     dataModel.addDiaryRecord(DiaryRecord(name: "Monday", text: "Another Good day", mood: RecordMood.Good))
@@ -399,7 +399,7 @@ class DiaryAppTests: XCTestCase {
   }
   
   // Don't be a pussy, do mocking manually!
-  class CreationDateCategorizationDataModelProxyMock : CreationDateCategorizationDataModelProxyDelegate {
+  class CreationDateCategorizationDataModelProxyMock : CreationDateCategorizationViewModelDelegate {
     var events: [ModelViewEvent] = []
     var sectionsCreatedCount = 0
     var sectionsDestroyedCount = 0
@@ -468,7 +468,7 @@ class DiaryAppTests: XCTestCase {
   
   func test_TableView_Proxy_Should_Correctly_Handle_Manipulating_Data_Model() {
     let dataModel = DataModel()
-    let tableViewProxy = DataModelProxiesFactory.getCreationDateCategorizationDataModelProxy(dataModel: dataModel)
+    let tableViewProxy = ViewModelsFactory.getCreationDateCategorizationViewModel(dataModel: dataModel)
     let proxyMock = CreationDateCategorizationDataModelProxyMock()
     tableViewProxy.delegate = proxyMock
     

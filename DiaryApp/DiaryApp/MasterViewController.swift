@@ -8,7 +8,7 @@
 
 import UIKit
 
-class MasterViewController: UITableViewController, CreationDateCategorizationDataModelProxyDelegate {
+class MasterViewController: UITableViewController, CreationDateCategorizationViewModelDelegate {
 
   static let TodayRecordsTableSectionIndex = 0
   static let ThisWeekRecordsTableSectionIndex = 1
@@ -17,8 +17,8 @@ class MasterViewController: UITableViewController, CreationDateCategorizationDat
   var detailViewController: DetailViewController? = nil
   var settingsViewController: SettingsViewController?
   var needToReloadData: Bool = false
-  let tableViewProxy: CreationDateCategorizationDataModelProxy =
-      DataModelProxiesFactory.getCreationDateCategorizationDataModelProxy(dataModel: DataModel.sharedInstance)
+  let tableViewProxy: CreationDateCategorizationViewModel =
+      ViewModelsFactory.getCreationDateCategorizationViewModel(dataModel: DataModel.sharedInstance)
   
   @IBAction func unwindToContainerVC(segue: UIStoryboardSegue) {
     // This is called on unwidning from settings view controller to this view controller
