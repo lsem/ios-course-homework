@@ -101,9 +101,11 @@ class MasterViewController: UITableViewController, CreationDateCategorizationVie
   override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
     if segue.identifier == "showDetail" {
       if let indexPath = self.tableView.indexPathForSelectedRow {
-        let recordModelId = self.tableViewModel.getDiaryRecordIdForIndexPath(indexPath)
+        let recordId = self.tableViewModel.getDiaryRecordIdForIndexPath(indexPath)
         let detailController = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
-        detailController.recordModelId = recordModelId
+        // Assign detail a record id and let it update itself, 
+        // if something interesting will happen with it, we should be notified via viewmodel protocol.
+        detailController.recordId = recordId
         detailController.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
         detailController.navigationItem.leftItemsSupplementBackButton = true
       }

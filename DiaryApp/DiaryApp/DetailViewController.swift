@@ -25,12 +25,12 @@ class DetailViewController: UIViewController, UITextViewDelegate, UITextFieldDel
   @IBOutlet weak var recordNameTextEdit: UITextField!
   @IBOutlet weak var changeRecordDateButton: UIBarButtonItem!
   
-  var recordModelId: Int = -1
+  var recordId: Int = -1
   var lastSelectedIndex: Int = UISegmentedControlNoSegment
   
   var recordBeingEdited: DiaryRecord? { get {
-      if self.recordModelId != -1 {
-        let record = DataModel.sharedInstance.retrieveDiaryRecordByID(recordModelId)
+      if self.recordId != -1 {
+        let record = DataModel.sharedInstance.retrieveDiaryRecordByID(recordId)
         return record
       }
       return nil
@@ -54,7 +54,7 @@ class DetailViewController: UIViewController, UITextViewDelegate, UITextFieldDel
   }
   
   func updateEditedDiaryRecord(updateCb: (DiaryRecord) -> Void) {
-    DataModel.sharedInstance.updateDiaryRecorByID(self.recordModelId,
+    DataModel.sharedInstance.updateDiaryRecorByID(self.recordId,
         updateCb: { (record: DiaryRecord) -> Void in
           updateCb(record)
     })
