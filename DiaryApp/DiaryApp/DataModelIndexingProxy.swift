@@ -241,7 +241,7 @@ class DataModelIndexingProxy : DataModelDelegate {
       this.weekOfMonth == that.weekOfMonth
   }
   
-  func buildDateCategorizedIndex() {
+  private func buildDateCategorizedIndex() {
     self.todayRecordsIndex.removeAll()
     self.thisWeekRecordsIndex.removeAll()
     self.erlierRecordsIndex.removeAll()
@@ -273,7 +273,7 @@ class DataModelIndexingProxy : DataModelDelegate {
     NSLog("erlierRecordsIndex: \(erlierRecordsIndex)")
   }
   
-  func buildSortedOrderedIndex() {
+  private func buildSortedOrderedIndex() {
     let dataRecords = self.dataModel.retrieveAllDiaryRecords()
     self.dateOrderedIndexData.removeAll()
     for (recordID, _) in dataRecords {
@@ -288,7 +288,7 @@ class DataModelIndexingProxy : DataModelDelegate {
     })
   }
   
-  func buildMoodOredredIndex() {
+  private func buildMoodOredredIndex() {
     let allMoods: [RecordMood] = [.NoSet, .Neutral, .Bad, .Good]
     for mood in allMoods {
       self.moodOrderedIndexData[mood]?.removeAll()
@@ -306,19 +306,19 @@ class DataModelIndexingProxy : DataModelDelegate {
     }
   }
   
-  func notifyRecordAdded(id: RecordID) -> Void {
+  private func notifyRecordAdded(id: RecordID) -> Void {
     if self.delegate != nil {
       self.delegate!.recordAdded(id)
     }
   }
   
-  func notifyRecordUpdated(id: RecordID) -> Void {
+  private func notifyRecordUpdated(id: RecordID) -> Void {
     if self.delegate != nil {
       self.delegate!.recordUpdated(id)
     }
   }
   
-  func notifyRecordRemoved(id: RecordID) -> Void {
+  private func notifyRecordRemoved(id: RecordID) -> Void {
     if self.delegate != nil {
       self.delegate!.recordRemoved(id)
     }
@@ -326,21 +326,18 @@ class DataModelIndexingProxy : DataModelDelegate {
   
   // MARK: - DataModelDelegate methods
   
-  // TODO: Make correct cache update
   func recordUpdated(recordId: RecordID, old: DiaryRecord, new: DiaryRecord) -> Void {
     self.moodCacheValid = false
     self.cacheValid = false
     notifyRecordUpdated(recordId)
   }
   
-  // TODO: Make correct cache update
   func recordInserted(recordId: RecordID, record: DiaryRecord) -> Void {
     self.moodCacheValid = false
     self.cacheValid = false
     notifyRecordAdded(recordId)
   }
   
-  // TODO: Make correct cache update
   func recordDropped(recordId: RecordID, record: DiaryRecord) -> Void {
     self.moodCacheValid = false
     self.cacheValid = false
