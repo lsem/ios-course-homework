@@ -106,6 +106,12 @@ class DataModel{
   }
 }
 
+protocol DataModelUIProxyDelegate : class {
+  func recordAdded(id: RecordID) -> Void
+  func recordUpdated(id: RecordID) -> Void
+  func recordRemoved(id: RecordID) -> Void
+}
+
 // This class is UItableView specific and in general should be
 // places into separate unit.
 class DataModelUIProxy : DataModelDelegate {
@@ -118,7 +124,8 @@ class DataModelUIProxy : DataModelDelegate {
   private var moodOrderedIndexData: Dictionary<RecordMood, Array<Int>>
   private var cacheValid: Bool
   private var moodCacheValid: Bool
-
+  private weak var delegate: DataModelUIProxyDelegate?
+  
   private lazy var dateComponentsRetrievalFlags: NSCalendarUnit = {
     var flags = NSCalendarUnit()
     flags.insert(NSCalendarUnit.Day)
@@ -140,6 +147,7 @@ class DataModelUIProxy : DataModelDelegate {
     self.cacheValid = false
     self.moodCacheValid = false
     self.dataModel.delegate = self
+    self.delegate = nil
   }
   
   // MARK: - Public methods and properties
@@ -370,40 +378,191 @@ class DataModelUIProxy : DataModelDelegate {
     }
   }
   
+  func notifyRecordAdded(id: RecordID) -> Void {
+    if self.delegate != nil {
+      self.delegate!.recordAdded(id)
+    }
+  }
+  
+  func notifyRecordUpdated(id: RecordID) -> Void {
+    if self.delegate != nil {
+      self.delegate!.recordUpdated(id)
+    }
+  }
+  
+  func notifyRecordRemoved(id: RecordID) -> Void {
+    if self.delegate != nil {
+      self.delegate!.recordRemoved(id)
+    }
+  }
+  
   // MARK: - DataModelDelegate methods
 
   // TODO: Make correct cache update
   func recordUpdated(recordId: RecordID, old: DiaryRecord, new: DiaryRecord) -> Void {
     self.moodCacheValid = false
     self.cacheValid = false
+    notifyRecordUpdated(recordId)
   }
 
   // TODO: Make correct cache update
   func recordInserted(recordId: RecordID, record: DiaryRecord) -> Void {
     self.moodCacheValid = false
     self.cacheValid = false
+    notifyRecordAdded(recordId)
   }
   
   // TODO: Make correct cache update
   func recordDropped(recordId: RecordID, record: DiaryRecord) -> Void {
     self.moodCacheValid = false
     self.cacheValid = false
+    notifyRecordRemoved(recordId)
   }
 }
 
 ////////////////////////////////////////////////////////////////////////
 
+
+
 protocol CreationDateCategorizationDataModelProxyDelegate : class {
-  func sectionCreated() -> Void
-  func sectionDestroyed() -> Void
-  func rowDeleted() -> Void
-  func rowInserted() -> Void
-  func rowUpdated() -> Void
+  func sectionCreated(sectionIndex: Int) -> Void
+  func sectionDestroyed(sectionIndex: Int) -> Void
+  func rowDeleted(section: Int, row: Int) -> Void
+  func rowInserted(section: Int, row: Int) -> Void
+  func rowUpdated(section: Int, row: Int) -> Void
 }
 
-class CreationDateCategorizationDataModelProxy {
+
+class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
   let proxy: DataModelUIProxy
   weak var delegate: CreationDateCategorizationDataModelProxyDelegate?
+  
+  enum RecordsCategory { case Today; case ThisWeek; case Erlier }
+  
+  // Keep track of current table configuration: sections count, their categories and sizes.
+  struct SectionInfo {
+    let rowsCount: Int
+    let category: RecordsCategory
+    let rows: [DiaryRecord]
+    
+    init(rowsCount: Int, category: RecordsCategory, rows: [DiaryRecord]) {
+      self.rowsCount = rowsCount
+      self.category = category
+      self.rows = rows
+    }
+  }
+  
+  class TableInfo : NSObject, NSCopying {
+    var sectionsCount: Int = 0
+    var sections: [Int: SectionInfo] = [:]
+    
+    func copyWithZone(zone: NSZone) -> AnyObject {
+      let newTableInfo = TableInfo()
+      newTableInfo.sectionsCount = self.sectionsCount
+      newTableInfo.sections = self.sections
+      return newTableInfo
+    }
+  }
+  
+  typealias SectionAddedCB = (section: Int) -> Void
+  typealias SectionRemovedCB = (section: Int) -> Void
+  typealias RowInsertedCB = (section: Int, row: Int) -> Void
+  typealias RowRemovedCB = (section: Int, row: Int) -> Void
+  
+  func compareTableInfos(a a: TableInfo, b: TableInfo, sectionAdded: SectionAddedCB,
+      sectionRemoved: SectionRemovedCB, rowInserted: RowInsertedCB, rowRemoved: RowRemovedCB) {
+    
+  }
+  
+  var currentTableInfo = TableInfo()
+
+  func resolveActualTableInfo() -> TableInfo {
+    let actualTableInfo = TableInfo()
+    actualTableInfo.sectionsCount = doGetNumberOfSections()
+    for sectionIdx in 0..<actualTableInfo.sectionsCount {
+      let category = decodeRecordCategoryForSection(sectionIdx)
+      var rows: [DiaryRecord]? = nil
+      switch category {
+      case .Today:
+        rows = self.proxy.retrieveTodayRecords()
+      case .ThisWeek:
+        rows = self.proxy.retrieveTheseWeekRecords()
+      case .Erlier:
+        rows = self.proxy.retrieveErlierRecords()
+      }
+      let sectionInfo = SectionInfo(rowsCount: rows!.count, category: category, rows: rows!)
+      actualTableInfo.sections[sectionIdx] = sectionInfo
+    }
+    return actualTableInfo
+  }
+  
+  func updateCurrentTableInfoIfNecessary() -> Void {
+    NSLog("updateCurrentTableInfoIfNecessary: Resolving actual table info")
+    let latestTableInfo = resolveActualTableInfo()
+    NSLog("updateCurrentTableInfoIfNecessary: Ccompare with existing")
+    compareTableInfos(a: latestTableInfo, b: self.currentTableInfo,
+      sectionAdded: { (section: Int) in
+        NSLog("Section Created: \(section)")
+        self.notifySectionCreated(section)
+      },
+      sectionRemoved: { (section: Int) in
+        NSLog("Section Removed: \(section)")
+        self.notifySectionDestroyed(section)
+      },
+      rowInserted: { (section: Int, row: Int) in
+        NSLog("Row \(row) inserted to section: \(section)")
+        self.notifyRowInserted(section, row: row)
+      },
+      rowRemoved: { (section: Int, row: Int) in
+        NSLog("Row \(row) removed from section: \(section)")
+        self.notifyRowDeleted(section, row: row)
+      }
+    )
+  }
+  
+  // MARK: - DataModelUIProxyDelegate
+  
+  func recordAdded(id: RecordID) -> Void {
+    updateCurrentTableInfoIfNecessary()
+  }
+  
+  func recordUpdated(id: RecordID) -> Void {
+    updateCurrentTableInfoIfNecessary()
+  }
+  
+  func recordRemoved(id: RecordID) -> Void {
+    updateCurrentTableInfoIfNecessary()
+  }
+
+  func notifySectionCreated(sectionIndex: Int) {
+    if self.delegate != nil {
+      self.delegate?.sectionCreated(sectionIndex)
+    }
+  }
+  
+  func notifySectionDestroyed(sectionIndex: Int) {
+    if self.delegate != nil {
+      self.delegate?.sectionDestroyed(sectionIndex)
+    }
+  }
+  
+  func notifyRowDeleted(section: Int, row: Int) {
+    if self.delegate != nil {
+      self.delegate?.rowDeleted(section, row: row)
+    }
+  }
+  
+  func notifyRowInserted(section: Int, row: Int) {
+    if self.delegate != nil {
+      self.delegate?.rowInserted(section, row: row)
+    }
+  }
+  func notifyRowUpdated(section: Int, row: Int) {
+    if self.delegate != nil {
+      self.delegate?.rowUpdated(section, row: row)
+    }
+  }
+  
   
   init(proxy: DataModelUIProxy) {
     self.proxy = proxy
@@ -424,7 +583,7 @@ class CreationDateCategorizationDataModelProxy {
   
   // MARK: - Internal
   
-  enum RecordsCategory { case Today; case ThisWeek; case Erlier }
+
   
   func decodeRecordCategoryForSection(section: Int) -> RecordsCategory {
     let todayRecordsCount = self.proxy.todayRecordsCount

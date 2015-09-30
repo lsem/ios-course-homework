@@ -372,6 +372,7 @@ class DiaryAppTests: XCTestCase {
     dataModel.updateDiaryRecorByID(firstGoodRecordModelIndex) {
       $0.mood = RecordMood.Bad
     }
+
     XCTAssert(dataModelProxy.getRecordsCountForMood(.Good) == 1)
     XCTAssert(dataModelProxy.getRecordsCountForMood(.Bad) == 2)
     XCTAssert(dataModelProxy.getRecordsCountForMood(.NoSet) == 2)

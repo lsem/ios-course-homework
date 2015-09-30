@@ -8,7 +8,7 @@
 
 import UIKit
 
-class MasterViewController: UITableViewController {
+class MasterViewController: UITableViewController, CreationDateCategorizationDataModelProxyDelegate {
 
   static let TodayRecordsTableSectionIndex = 0
   static let ThisWeekRecordsTableSectionIndex = 1
@@ -254,5 +254,13 @@ class MasterViewController: UITableViewController {
       // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view.
     }
   }
+  
+  // MARK: - CreationDateCategorizationDataModelProxyDelegate methods
+
+  func sectionCreated(sectionIndex: Int) -> Void { NSLog("sectionCreated(\(sectionIndex))") }
+  func sectionDestroyed(sectionIndex: Int) -> Void { NSLog("sectionDestroyed(\(sectionIndex))") }
+  func rowDeleted(section: Int, row: Int) -> Void { NSLog("rowDeleted(\(section), \(row))") }
+  func rowInserted(section: Int, row: Int) -> Void { NSLog("rowDeleted(\(section), \(row))") }
+  func rowUpdated(section: Int, row: Int) -> Void { NSLog("rowDeleted(\(section), \(row))") }
 }
 
