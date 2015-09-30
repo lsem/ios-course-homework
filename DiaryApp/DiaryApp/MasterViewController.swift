@@ -95,7 +95,7 @@ class MasterViewController: UITableViewController, CreationDateCategorizationVie
   override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
     if segue.identifier == "showDetail" {
       if let indexPath = self.tableView.indexPathForSelectedRow {
-        let recordModelId = getDataRecordModelIdForIndexPath(indexPath)
+        let recordModelId = self.tableViewProxy.getDiaryRecordIdForIndexPath(indexPath)
         let detailController = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
         detailController.recordModelId = recordModelId
         detailController.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
@@ -120,14 +120,6 @@ class MasterViewController: UITableViewController, CreationDateCategorizationVie
   
   // MARK: - Table View BEGIN
   
-  func getDataRecordForIndexPath(indexPath: NSIndexPath) -> DiaryRecord {
-    return self.tableViewProxy.getDataRecordForIndexPath(indexPath)
-  }
-  
-  func getDataRecordModelIdForIndexPath(indexPath: NSIndexPath) -> Int {
-    return self.tableViewProxy.getDataRecordModelIdForIndexPath(indexPath)
-  }
-
 //  override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
 //    let record = getDataRecordForIndexPath(indexPath)
 //    let emptyRecordFixedHeight = CGFloat(50.0)
@@ -165,7 +157,7 @@ class MasterViewController: UITableViewController, CreationDateCategorizationVie
   
   override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
     let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
-    let record = getDataRecordForIndexPath(indexPath)
+    let record = self.tableViewProxy.getDiaryRecordByIndexPath(indexPath)
     return prepareCell(cell, forRecord: record)
   }
   
@@ -176,7 +168,7 @@ class MasterViewController: UITableViewController, CreationDateCategorizationVie
   
   override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
     if editingStyle == .Delete {
-      let recordId = getDataRecordModelIdForIndexPath(indexPath)
+      let recordId = self.tableViewProxy.getDiaryRecordIdForIndexPath(indexPath)
       DataModel.sharedInstance.removeDiaryRecordByID(recordId)
     } else if editingStyle == .Insert {
        // ..
