@@ -518,13 +518,13 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
     for (category, sectionIdx) in b_sectionsCategories { DB[category] = sectionIdx }
     for (category, sectionIdx) in DA {
       if DB[category] == nil {
-        // Befire section removed, all records removed
-        // IMPORTANT: Due to specific behaviour of UITableView, if last record on last record removing,
-        // we need remove a section instead of row.
+        // Before section removed, all records removed
         let wasRowsInSection = a.sections[sectionIdx]!.rows.count
         for (rowIdx, _) in a.sections[sectionIdx]!.rows.enumerate() {
+          // Check if we are going to remove last row and if so,
+          // do not do this due to the fact, that this code serves to UITableView which in our case
+          // requires to remove section instead of last row and then section. In etiher case, we will have a crash.
           if rowIdx == wasRowsInSection - 1 {
-            // Skip last!
             break
           }
           rowRemoved(section: sectionIdx, row: rowIdx)
