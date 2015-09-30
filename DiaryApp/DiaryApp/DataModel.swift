@@ -151,6 +151,13 @@ class DataModelUIProxy : DataModelDelegate {
   }
   
   // MARK: - Public methods and properties
+  
+  func synchronizeWithExistingData() {
+    let allData = self.dataModel.retrieveAllDiaryRecords()
+    for (recordId, _/*record*/) in allData {
+      notifyRecordAdded(recordId)
+    }
+  }
 
   var todayRecordsCount: Int { get {
     rebuildDateRecordsCacheIfNecessary()
@@ -451,6 +458,13 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
   
   enum RecordsCategory { case Today; case ThisWeek; case Erlier }
   
+  // MARK: - Interface
+  func synchronizeWithExistingData() {
+    self.proxy.synchronizeWithExistingData()
+  }
+  
+  // MARK: - Implementation details
+  
   // Keep track of current table configuration: sections count, their categories and sizes.
   struct SectionInfo {
     let rowsCount: Int
@@ -498,7 +512,6 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
     var foundDiffs = false
     let a_sectionsCategories: [(RecordsCategory, Int)] = a.sections.map() { (sIdx, sInfo) in (sInfo.category, sIdx) }
     let b_sectionsCategories: [(RecordsCategory, Int)] = b.sections.map() { (sIdx, sInfo) in (sInfo.category, sIdx) }
-    NSLog("Comparing sections. A: '\(a_sectionsCategories)' and B: '\(b_sectionsCategories)'")
     var DA = Dictionary<RecordsCategory, Int>()
     var DB = Dictionary<RecordsCategory, Int>()
     for (category, sectionIdx) in a_sectionsCategories { DA[category] = sectionIdx }
@@ -506,7 +519,14 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
     for (category, sectionIdx) in DA {
       if DB[category] == nil {
         // Befire section removed, all records removed
+        // IMPORTANT: Due to specific behaviour of UITableView, if last record on last record removing,
+        // we need remove a section instead of row.
+        let wasRowsInSection = a.sections[sectionIdx]!.rows.count
         for (rowIdx, _) in a.sections[sectionIdx]!.rows.enumerate() {
+          if rowIdx == wasRowsInSection - 1 {
+            // Skip last!
+            break
+          }
           rowRemoved(section: sectionIdx, row: rowIdx)
         }
         sectionRemoved(section: sectionIdx)
@@ -526,7 +546,6 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
   }
   
   func compareTableInfoForRowsDiff(a a: TableInfo, b: TableInfo, rowInserted: RowInsertedCB, rowRemoved: RowRemovedCB) {
-    NSLog("compareTableInfoForRowsDiff")
     // NOTE: Sections should be already checked for equality
     let sectionsCount = a.sectionsCount
     assert(a.sections.count == b.sections.count)
@@ -544,8 +563,6 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
     typealias RecordPosition = Int
     var a_rows_hash: Dictionary<Int, (RecordID, (RecordPosition, DiaryRecord))>= [:]
     var b_rows_hash: Dictionary<Int, (RecordID, (RecordPosition, DiaryRecord))>= [:]
-    NSLog("compareSectionsForRowDiff: a.rows: \(a.rows)")
-    NSLog("compareSectionsForRowDiff: b.rows: \(a.rows)")
     for (index, row) in a.rows.enumerate() { a_rows_hash[row.0] = (index, row) }
     for (index, row) in b.rows.enumerate() { b_rows_hash[row.0] = (index, row) }
     for (modelId, rowRec) in a_rows_hash  {
@@ -570,12 +587,9 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
       let category = decodeRecordCategoryForSection(sectionIdx)
       var rows: [(RecordID, DiaryRecord)]? = nil
       switch category {
-      case .Today:
-        rows = self.proxy.retrieveTodayRecords()
-      case .ThisWeek:
-        rows = self.proxy.retrieveTheseWeekRecords()
-      case .Erlier:
-        rows = self.proxy.retrieveErlierRecords()
+      case .Today: rows = self.proxy.retrieveTodayRecords()
+      case .ThisWeek: rows = self.proxy.retrieveTheseWeekRecords()
+      case .Erlier: rows = self.proxy.retrieveErlierRecords()
       }
       let sectionInfo = SectionInfo(rowsCount: rows!.count, category: category, rows: rows!)
       actualTableInfo.sections[sectionIdx] = sectionInfo
@@ -584,26 +598,12 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
   }
   
   func updateCurrentTableInfoIfNecessary() -> Void {
-    NSLog("updateCurrentTableInfoIfNecessary: Resolving actual table info")
     let latestTableInfo = resolveActualTableInfo()
-    NSLog("updateCurrentTableInfoIfNecessary: Ccompare with existing")
     compareTableInfos(a: self.currentTableInfo, b: latestTableInfo,
-      sectionAdded: { (section: Int) in
-        NSLog("Section Created: \(section)")
-        self.notifySectionCreated(section)
-      },
-      sectionRemoved: { (section: Int) in
-        NSLog("Section Removed: \(section)")
-        self.notifySectionDestroyed(section)
-      },
-      rowInserted: { (section: Int, row: Int) in
-        NSLog("Row \(row) inserted to section: \(section)")
-        self.notifyRowInserted(section, row: row)
-      },
-      rowRemoved: { (section: Int, row: Int) in
-        NSLog("Row \(row) removed from section: \(section)")
-        self.notifyRowDeleted(section, row: row)
-      }
+      sectionAdded: { (section: Int) in self.notifySectionCreated(section) },
+      sectionRemoved: { (section: Int) in self.notifySectionDestroyed(section) },
+      rowInserted: { (section: Int, row: Int) in self.notifyRowInserted(section, row: row) },
+      rowRemoved: { (section: Int, row: Int) in self.notifyRowDeleted(section, row: row) }
     )
     self.currentTableInfo = latestTableInfo
   }

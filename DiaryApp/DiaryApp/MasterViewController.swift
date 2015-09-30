@@ -16,8 +16,9 @@ class MasterViewController: UITableViewController, CreationDateCategorizationDat
   
   var detailViewController: DetailViewController? = nil
   var settingsViewController: SettingsViewController?
-  let dataModelProxy: DataModelUIProxy = DataModelUIProxy(dataModel: DataModel.sharedInstance)
   var needToReloadData: Bool = false
+  let tableViewProxy: CreationDateCategorizationDataModelProxy =
+      DataModelProxiesFactory.getCreationDateCategorizationDataModelProxy(dataModel: DataModel.sharedInstance)
   
   @IBAction func unwindToContainerVC(segue: UIStoryboardSegue) {
     // This is called on unwidning from settings view controller to this view controller
@@ -26,6 +27,8 @@ class MasterViewController: UITableViewController, CreationDateCategorizationDat
   
   override func viewDidLoad() {
     super.viewDidLoad()
+    tableViewProxy.delegate = self
+    tableViewProxy.synchronizeWithExistingData()
     subscribeOnAppSettingsChanges()
     createSettingsButton()
     createNewRecordButton()
@@ -117,54 +120,12 @@ class MasterViewController: UITableViewController, CreationDateCategorizationDat
   
   // MARK: - Table View BEGIN
   
-  enum RecordsCategory { case Today; case ThisWeek; case Erlier }
-  
-  func decodeRecordCategoryForSection(section: Int) -> RecordsCategory {
-    let todayRecordsCount = self.dataModelProxy.todayRecordsCount
-    let thisWeekRecordsCount = self.dataModelProxy.thisWeekRecordsCount
-    let erlierRecordsCount = self.dataModelProxy.erlierRecordsCount
-    switch section  {
-    case MasterViewController.TodayRecordsTableSectionIndex:
-      if todayRecordsCount > 0 { return .Today }
-      if thisWeekRecordsCount > 0 { return .ThisWeek }
-      if erlierRecordsCount > 0 { return .Erlier }
-      assert(false, "This method is coded in way it does not support cases when all sections are empty")
-    case MasterViewController.ThisWeekRecordsTableSectionIndex:
-      if todayRecordsCount > 0 {
-        if thisWeekRecordsCount > 0 {
-          return .ThisWeek
-        } else {
-          return .Erlier
-        }
-      } else {
-        // no today records
-        assert(erlierRecordsCount > 0)
-        return .Erlier
-      }
-    case MasterViewController.ErlierRecordsTableSectionIndex:
-      assert(erlierRecordsCount > 0)
-      return .Erlier
-    default:
-      assert(false)
-    }
-  }
-  
   func getDataRecordForIndexPath(indexPath: NSIndexPath) -> DiaryRecord {
-    let category = decodeRecordCategoryForSection(indexPath.section)
-    switch category {
-    case .Today: return self.dataModelProxy.getTodayRecordAtIndex(indexPath.row)
-    case .ThisWeek: return self.dataModelProxy.getThisWeelRecordAtIndex(indexPath.row)
-    case .Erlier: return self.dataModelProxy.getErlierRecordAtIndex(indexPath.row)
-    }
+    return self.tableViewProxy.getDataRecordForIndexPath(indexPath)
   }
   
   func getDataRecordModelIdForIndexPath(indexPath: NSIndexPath) -> Int {
-    let category = decodeRecordCategoryForSection(indexPath.section)
-    switch category {
-    case .Today: return self.dataModelProxy.getModelRecordIdByTodayRecordIndex(indexPath.row)
-    case .ThisWeek: return self.dataModelProxy.getModelRecordIdByThisWeekRecordIndex(indexPath.row)
-    case .Erlier: return self.dataModelProxy.getModelRecordIdByErlierRecordIndex(indexPath.row)
-    }
+    return self.tableViewProxy.getDataRecordModelIdForIndexPath(indexPath)
   }
 
 //  override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
@@ -175,32 +136,15 @@ class MasterViewController: UITableViewController, CreationDateCategorizationDat
 //  }
   
   override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-    var sectionsCount = 0
-    if self.dataModelProxy.todayRecordsCount > 0 { sectionsCount += 1 }
-    if self.dataModelProxy.thisWeekRecordsCount > 0 { sectionsCount += 1 }
-    if self.dataModelProxy.erlierRecordsCount > 0 { sectionsCount += 1 }
-    return sectionsCount
+     return self.tableViewProxy.getSectionsCount()
   }
 
   override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-    let category = decodeRecordCategoryForSection(section)
-    switch category {
-    case .Today: return "Today"
-    case .ThisWeek: return "This Week"
-    case .Erlier: return "Erlier"
-    }
+    return self.tableViewProxy.getSectionNameByIndex(section)
   }
   
   override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    let category = decodeRecordCategoryForSection(section)
-    switch category {
-    case .Today:
-      return self.dataModelProxy.todayRecordsCount
-    case .ThisWeek:
-      return self.dataModelProxy.thisWeekRecordsCount
-    case .Erlier:
-      return self.dataModelProxy.erlierRecordsCount
-    }
+    return self.tableViewProxy.getSectionRowsCountBySection(section)
   }
   
   func prepareCell(cell: UITableViewCell, forRecord record: DiaryRecord) -> UITableViewCell {
@@ -230,37 +174,39 @@ class MasterViewController: UITableViewController, CreationDateCategorizationDat
     return true
   }
   
-  func isSectionAboutToBeEmpty(section: Int) -> Bool {
-    let category = decodeRecordCategoryForSection(section)
-    switch category {
-    case .Today: return self.dataModelProxy.todayRecordsCount == 1
-    case .ThisWeek: return self.dataModelProxy.thisWeekRecordsCount == 1
-    case .Erlier: return self.dataModelProxy.erlierRecordsCount == 1
-    }
-  }
-  
   override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
     if editingStyle == .Delete {
-      let wasItLastSection = isSectionAboutToBeEmpty(indexPath.section)
       let recordId = getDataRecordModelIdForIndexPath(indexPath)
       DataModel.sharedInstance.removeDiaryRecordByID(recordId)
-      if wasItLastSection {
-        let indexset = NSIndexSet(index: indexPath.section)
-        tableView.deleteSections(indexset, withRowAnimation: .Fade)
-      } else {
-        tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-      }
     } else if editingStyle == .Insert {
-      // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view.
+       // ..
     }
   }
   
   // MARK: - CreationDateCategorizationDataModelProxyDelegate methods
 
-  func sectionCreated(sectionIndex: Int) -> Void { NSLog("sectionCreated(\(sectionIndex))") }
-  func sectionDestroyed(sectionIndex: Int) -> Void { NSLog("sectionDestroyed(\(sectionIndex))") }
-  func rowDeleted(section: Int, row: Int) -> Void { NSLog("rowDeleted(\(section), \(row))") }
-  func rowInserted(section: Int, row: Int) -> Void { NSLog("rowDeleted(\(section), \(row))") }
-  func rowUpdated(section: Int, row: Int) -> Void { NSLog("rowDeleted(\(section), \(row))") }
+  func sectionCreated(sectionIndex: Int) -> Void {
+    NSLog("sectionCreated(\(sectionIndex))")
+  }
+  
+  func sectionDestroyed(sectionIndex: Int) -> Void {
+    NSLog("sectionDestroyed(\(sectionIndex))")
+    let indexset = NSIndexSet(index: sectionIndex)
+    self.tableView.deleteSections(indexset, withRowAnimation: .Fade)
+  }
+  
+  func rowDeleted(section: Int, row: Int) -> Void {
+    NSLog("rowDeleted(\(section), \(row))")
+    let indexPath = NSIndexPath(forRow: row, inSection: section)
+    tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+  }
+  
+  func rowInserted(section: Int, row: Int) -> Void {
+    NSLog("rowInserted(\(section), \(row))")
+  }
+  
+  func rowUpdated(section: Int, row: Int) -> Void {
+    NSLog("rowUpdated(\(section), \(row))")
+  }
 }
 
