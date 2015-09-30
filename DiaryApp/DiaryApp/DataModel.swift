@@ -521,9 +521,6 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
         // Before section removed, all records removed
         let wasRowsInSection = a.sections[sectionIdx]!.rows.count
         for (rowIdx, _) in a.sections[sectionIdx]!.rows.enumerate() {
-          // Check if we are going to remove last row and if so,
-          // do not do this due to the fact, that this code serves to UITableView which in our case
-          // requires to remove section instead of last row and then section. In etiher case, we will have a crash.
           let lastRecord = rowIdx == wasRowsInSection - 1
           rowRemoved(section: sectionIdx, row: rowIdx, lastRecord: lastRecord)
         }
