@@ -8,72 +8,102 @@
 
 import Foundation
 
-protocol DataModelDelegate {
-  func dataModelCollectionChanged() -> Void
-  func recordUpdated(old: DiaryRecord, new: DiaryRecord) -> Void
+typealias RecordID = Int
+
+protocol DataModelDelegate : class {
+//  func dataModelCollectionChanged() -> Void
+  func recordUpdated(recordId: RecordID, old: DiaryRecord, new: DiaryRecord) -> Void
+  func recordInserted(recordId: RecordID, record: DiaryRecord) -> Void
+  func recordDropped(recordId: RecordID, record: DiaryRecord) -> Void
 }
 
 // For the sake of simplicity, assume that data is singleton.
 class DataModel{
   static let sharedInstance = DataModel()
-  private var recordsCollection: [DiaryRecord] = []
-  var delegate: DataModelDelegate? = nil
+  private var recordsCollection: Dictionary<RecordID, DiaryRecord> = [:]
+  var currentRecordID: RecordID = 0
+  weak var delegate: DataModelDelegate? = nil
   var recordsCount: Int { get {
       return recordsCollection.count
     }
   }
   
+  func generateRecordId() -> RecordID {
+    let newRecordID = self.currentRecordID
+    ++self.currentRecordID
+    return newRecordID
+  }
+  
   func initFromArray(data: [DiaryRecord]) {
-      self.recordsCollection = data
+    assert(self.recordsCollection.isEmpty) // Method can only deal with initializations
+    for record in data {
+      let id = generateRecordId()
+      self.recordsCollection[id] = record
+    }
   }
   
-  func addDiaryRecord(record: DiaryRecord) {
-    recordsCollection.append(record)
-    notifyCollectionChange()
+  func addDiaryRecord(record: DiaryRecord) -> RecordID{
+    let id = generateRecordId()
+    recordsCollection[id] = record
+    notifyRecordInserted(id, record: record)
+    return id
   }
   
-  func removeDiaryRecordAt(index index: Int) {
-    self.recordsCollection.removeAtIndex(index)
-    notifyCollectionChange()
+  func removeDiaryRecordByID(id: RecordID) {
+    let droppedRecord = self.recordsCollection.removeValueForKey(id)
+    assert(droppedRecord != nil, "No such records.")
+    notifyRecordDropped(id, record: droppedRecord!)
   }
   
-  func updateDiaryRecordAt(index index: Int, updateCb: (DiaryRecord) -> Void) {
-    let ref = self.recordsCollection[index]
-    let recordBeforeUpdate = DiaryRecord(name: ref.name, text: ref.text,
-        mood: ref.mood, creationDate: ref.creationDate)
-    
-    updateCb(self.recordsCollection[index])
-    
-    let recordAfterUpdate = self.recordsCollection[index]
-    notifyRecordUpdated(recordBeforeUpdate, new: recordAfterUpdate)
+  func updateDiaryRecorByID(id: RecordID, updateCb: (DiaryRecord) -> Void) {
+    let record = self.recordsCollection[id]
+    assert(record != nil)
+    let previousRecord = record!.copy() as! DiaryRecord
+    updateCb(record!)
+    // record! should be updated now as was passed by reference.
+    assert(record! === self.recordsCollection[id])
+    notifyRecordUpdated(id, old: previousRecord, new: record!)
   }
   
-  // Retrieves all available records in unspecified order but STABLE so that
-  // after retrieving some data, one can assume indexes will not change (like sequential storage).
-  func retrieveAllDiaryRecords() -> [DiaryRecord] {
+  func retrieveAllDiaryRecordValues() -> [DiaryRecord] {
+    let array =  [DiaryRecord](recordsCollection.values)
+    return array
+  }
+  
+  func retrieveAllDiaryRecords() -> [ RecordID: DiaryRecord ] {
     return recordsCollection
   }
   
-  func retrieveDiaryRecordAt(index index: Int) -> DiaryRecord? {
-    if index < self.recordsCollection.count {
-      let recordCopy = self.recordsCollection[index].copy() as? DiaryRecord
-      return  recordCopy
+  func getDiaryRecordRefByID(id: RecordID) -> DiaryRecord? {
+    let record = self.recordsCollection[id]
+    return record
+  }
+  
+  func retrieveDiaryRecordByID(id: RecordID) -> DiaryRecord? {
+    let record = self.recordsCollection[id]
+    if let record = record {
+      return record.copy() as? DiaryRecord
     }
     return nil
   }
   
-  internal func notifyCollectionChange() {
+  func notifyRecordUpdated(recordId: RecordID, old: DiaryRecord, new: DiaryRecord) -> Void {
     if self.delegate != nil {
-      self.delegate!.dataModelCollectionChanged()
+      self.delegate!.recordUpdated(recordId, old: old, new: new)
     }
   }
 
-  internal func notifyRecordUpdated(old: DiaryRecord, new: DiaryRecord) {
+  func notifyRecordInserted(recordId: RecordID, record: DiaryRecord) -> Void {
     if self.delegate != nil {
-      self.delegate!.recordUpdated(old, new: new)
+      self.delegate!.recordInserted(recordId, record: record)
     }
   }
   
+  func notifyRecordDropped(recordId: RecordID, record: DiaryRecord) -> Void {
+    if self.delegate != nil {
+      self.delegate!.recordDropped(recordId, record: record)
+    }
+  }
 }
 
 // This class is UItableView specific and in general should be
@@ -87,6 +117,7 @@ class DataModelUIProxy : DataModelDelegate {
   private var dateOrderedIndexData: Array<Int>
   private var moodOrderedIndexData: Dictionary<RecordMood, Array<Int>>
   private var cacheValid: Bool
+  private var moodCacheValid: Bool
 
   private lazy var dateComponentsRetrievalFlags: NSCalendarUnit = {
     var flags = NSCalendarUnit()
@@ -107,6 +138,7 @@ class DataModelUIProxy : DataModelDelegate {
     self.dateOrderedIndexData = []
     self.moodOrderedIndexData = [ .NoSet: [], .Neutral: [], .Good: [], RecordMood.Bad: [] ]
     self.cacheValid = false
+    self.moodCacheValid = false
     self.dataModel.delegate = self
   }
   
@@ -118,18 +150,22 @@ class DataModelUIProxy : DataModelDelegate {
     }
   }
 
-  func getTodayRecordAtIndex(index: Int) -> DiaryRecord {
-    let index = getModelRecordIdByTodayRecordIndex(index)
-    return self.dataModel.recordsCollection[index]
+  func getTodayRecordAtIndex(index: Int) -> DiaryRecord! {
+    let recordID = getModelRecordIdByTodayRecordIndex(index)
+    let reocord = self.dataModel.retrieveDiaryRecordByID(recordID)
+    return reocord
   }
   
   func retrieveTodayRecords() -> [DiaryRecord] {
     rebuildDateRecordsCacheIfNecessary()
     // TODO: Reserve memory for ahead
     var todayRecords: Array<DiaryRecord> = []
-    let allRecords: [DiaryRecord] = self.dataModel.retrieveAllDiaryRecords()
-    for index in self.todayRecordsIndex {
-      todayRecords.append(allRecords[index])
+    for recordId in self.todayRecordsIndex {
+      if let record = self.dataModel.retrieveDiaryRecordByID(recordId) {
+        todayRecords.append(record)
+      } else {
+        assert(false, "Inconsistency in index")
+      }
     }
     return todayRecords
   }
@@ -141,17 +177,20 @@ class DataModelUIProxy : DataModelDelegate {
   }
 
   func getThisWeelRecordAtIndex(index: Int) -> DiaryRecord {
-    let index = getModelRecordIdByThisWeekRecordIndex(index)
-    return self.dataModel.recordsCollection[index]
+    let recordID = getModelRecordIdByThisWeekRecordIndex(index)
+    let record = self.dataModel.retrieveDiaryRecordByID(recordID)
+    assert(record != nil, "Inconsistency of Index")
+    return record!
   }
   
   func retrieveTheseWeekRecords() -> [DiaryRecord] {
     rebuildDateRecordsCacheIfNecessary()
     // TODO: Reserve memory for ahead
     var weekRecords: Array<DiaryRecord> = []
-    let allRecords: [DiaryRecord] = self.dataModel.retrieveAllDiaryRecords()
-    for index in self.thisWeekRecordsIndex {
-      weekRecords.append(allRecords[index])
+    for recordId in self.thisWeekRecordsIndex {
+      let record = self.dataModel.retrieveDiaryRecordByID(recordId)
+      assert(record != nil, "Inconsistency of Index")
+      weekRecords.append(record!)
     }
     return weekRecords
   }
@@ -163,17 +202,20 @@ class DataModelUIProxy : DataModelDelegate {
   }
   
   func getErlierRecordAtIndex(index: Int) -> DiaryRecord {
-    let index = getModelRecordIdByErlierRecordIndex(index)
-    return self.dataModel.recordsCollection[index]
+    let recordID = getModelRecordIdByErlierRecordIndex(index)
+    let record = self.dataModel.retrieveDiaryRecordByID(recordID)
+    assert(record != nil, "Inconsistency in Index")
+    return record!
   }  
   
   func retrieveErlierRecords() -> [DiaryRecord] {
     rebuildDateRecordsCacheIfNecessary()
     // TODO: Reserve memory for ahead
     var erlierRecords: Array<DiaryRecord> = []
-    let allRecords: [DiaryRecord] = self.dataModel.retrieveAllDiaryRecords()
-    for index in self.erlierRecordsIndex {
-      erlierRecords.append(allRecords[index])
+    for recordId in self.erlierRecordsIndex {
+      let record = self.dataModel.retrieveDiaryRecordByID(recordId)
+      assert(record != nil, "Inconsistency of Index")
+      erlierRecords.append(record!)
     }
     return erlierRecords
   }
@@ -188,17 +230,19 @@ class DataModelUIProxy : DataModelDelegate {
   }
   
   func getMoodRecordAtIndexForMood(mood: RecordMood, index: Int) -> DiaryRecord {
-    let modelIndex = getModelRecordByMoodOrderedIndex(mood, index: index)
-    return self.dataModel.recordsCollection[modelIndex]
+    let recordID = getModelRecordByMoodOrderedIndex(mood, index: index)
+    let record = self.dataModel.retrieveDiaryRecordByID(recordID)
+    assert(record != nil, "Inconsistency of Index")
+    return record!
   }
   
   func retrieveAllRecordsSortedByCreationDate() -> [DiaryRecord] {
     rebuildDateRecordsCacheIfNecessary()
-    var allRecords = self.dataModel.retrieveAllDiaryRecords()
     var sortedRecords: [DiaryRecord] = []
-    sortedRecords.reserveCapacity(allRecords.count)
-    for idx in self.dateOrderedIndexData {
-        sortedRecords.append(allRecords[idx])
+    for recordID in self.dateOrderedIndexData {
+      let record = self.dataModel.retrieveDiaryRecordByID(recordID)
+      assert(record != nil, "Inconsistency of Index")
+      sortedRecords.append(record!)
     }
     //sortedRecords.sortInPlace({$0.creationDate < $1.creationDate })
     return sortedRecords
@@ -216,21 +260,21 @@ class DataModelUIProxy : DataModelDelegate {
   
   func getModelRecordIdByThisWeekRecordIndex(thisWeekId: Int) -> Int {
     rebuildDateRecordsCacheIfNecessary()
-    let modelIndex: Int = self.thisWeekRecordsIndex[thisWeekId]
-    return modelIndex
+    let recordID = self.thisWeekRecordsIndex[thisWeekId]
+    return recordID
   }
   
   func getModelRecordIdByErlierRecordIndex(erlierId: Int) -> Int {
     rebuildDateRecordsCacheIfNecessary()    
-    let modelIndex: Int = self.erlierRecordsIndex[erlierId]
-    return modelIndex
+    let recordID = self.erlierRecordsIndex[erlierId]
+    return recordID
   }
   
   func getModelRecordByMoodOrderedIndex(mood: RecordMood, index: Int) -> Int {
     rebuildDateRecordsCacheIfNecessary()
     if let indexForMood = self.moodOrderedIndexData[mood] {
-      let modelIndex: Int = indexForMood[index]
-      return modelIndex
+      let recordID = indexForMood[index]
+      return recordID
     }
     assert(false, "Invalid erlierId value \(index) or inconsistent index")
   }
@@ -239,11 +283,15 @@ class DataModelUIProxy : DataModelDelegate {
   
   private func rebuildDateRecordsCacheIfNecessary() {
     if !cacheValid {
-      NSLog("Rebuilding cache..")
+      NSLog("Rebuilding date categorization cache..")
       buildDateCategorizedIndex()
       buildSortedOrderedIndex()
-      buildMoodOredredIndex()
       cacheValid = true
+    }
+    if (!moodCacheValid) {
+      NSLog("Rebuilding mood categorization cache..")
+      buildMoodOredredIndex()
+      moodCacheValid = true
     }
   }
   
@@ -273,15 +321,14 @@ class DataModelUIProxy : DataModelDelegate {
     self.todayRecordsIndex.removeAll()
     self.thisWeekRecordsIndex.removeAll()
     self.erlierRecordsIndex.removeAll()
-    let allRecords: [DiaryRecord] = self.dataModel.retrieveAllDiaryRecords()
-    for (index, record) in allRecords.enumerate() {
+    for (recordID, record) in self.dataModel.retrieveAllDiaryRecords() {
       let today = NSDate()
       if areDateDaysSame(today, asDate: record.creationDate) {
-        self.todayRecordsIndex.append(index)
+        self.todayRecordsIndex.append(recordID)
       } else if areDateWeaksSame(today, asDate: record.creationDate) {
-        self.thisWeekRecordsIndex.append(index)
+        self.thisWeekRecordsIndex.append(recordID)
       } else {
-        self.erlierRecordsIndex.append(index)
+        self.erlierRecordsIndex.append(recordID)
       }
     }
     NSLog("DateCategorized cache has been updated:")
@@ -291,46 +338,189 @@ class DataModelUIProxy : DataModelDelegate {
   }
   
   func buildSortedOrderedIndex() {
-    var dataRecords = self.dataModel.retrieveAllDiaryRecords()
-    self.dateOrderedIndexData = Array<Int>(count: dataRecords.count, repeatedValue: 0)
-    for index in 0..<self.dateOrderedIndexData.count {
-      self.dateOrderedIndexData[index] = index
+    let dataRecords = self.dataModel.retrieveAllDiaryRecords()
+    self.dateOrderedIndexData.removeAll()
+    for (recordID, _) in dataRecords {
+      self.dateOrderedIndexData.append(recordID)
     }
     self.dateOrderedIndexData.sortInPlace({
-      dataRecords[$0].creationDate < dataRecords[$1].creationDate
+      let thisRecord = self.dataModel.getDiaryRecordRefByID($0)
+      let thatRecord = self.dataModel.getDiaryRecordRefByID($1)
+      assert(thisRecord != nil, "Inconsistency of Index")
+      assert(thatRecord != nil, "Inconsistency of Index")
+      return thisRecord!.creationDate < thatRecord!.creationDate
     })
   }
   
   func buildMoodOredredIndex() {
-    let allValues: [RecordMood] = [.NoSet, .Neutral, .Bad, .Good]
-    for mood in allValues {
+    let allMoods: [RecordMood] = [.NoSet, .Neutral, .Bad, .Good]
+    for mood in allMoods {
       self.moodOrderedIndexData[mood]?.removeAll()
     }
     let dataRecords = self.dataModel.retrieveAllDiaryRecords()
-    for (index, record) in dataRecords.enumerate() {
-      self.moodOrderedIndexData[record.mood]?.append(index)
+    for (recordID, record) in dataRecords {
+      self.moodOrderedIndexData[record.mood]?.append(recordID)
+    }
+    for mood in allMoods {
+      self.moodOrderedIndexData[mood]?.sortInPlace() {
+        let thisRecord = dataRecords[$0]
+        let thatRecord = dataRecords[$1]
+        return thisRecord!.creationDate < thatRecord!.creationDate
+      }
     }
   }
   
   // MARK: - DataModelDelegate methods
 
-  func dataModelCollectionChanged() -> Void {
+  // TODO: Make correct cache update
+  func recordUpdated(recordId: RecordID, old: DiaryRecord, new: DiaryRecord) -> Void {
+    self.moodCacheValid = false
     self.cacheValid = false
   }
 
-  func recordUpdated(old: DiaryRecord, new: DiaryRecord) -> Void {
-    // TODO: Once DiaryRecord will be correct in NSCopying sense, 
-    // we should check whether date changed here!
-    if old.creationDate != new.creationDate {
-      self.cacheValid = false
+  // TODO: Make correct cache update
+  func recordInserted(recordId: RecordID, record: DiaryRecord) -> Void {
+    self.moodCacheValid = false
+    self.cacheValid = false
+  }
+  
+  // TODO: Make correct cache update
+  func recordDropped(recordId: RecordID, record: DiaryRecord) -> Void {
+    self.moodCacheValid = false
+    self.cacheValid = false
+  }
+}
+
+////////////////////////////////////////////////////////////////////////
+
+protocol CreationDateCategorizationDataModelProxyDelegate : class {
+  func sectionCreated() -> Void
+  func sectionDestroyed() -> Void
+  func rowDeleted() -> Void
+  func rowInserted() -> Void
+  func rowUpdated() -> Void
+}
+
+class CreationDateCategorizationDataModelProxy {
+  let proxy: DataModelUIProxy
+  weak var delegate: CreationDateCategorizationDataModelProxyDelegate?
+  
+  init(proxy: DataModelUIProxy) {
+    self.proxy = proxy
+    self.delegate = nil
+  }
+  
+  func getSectionsCount() -> Int {
+    return doGetNumberOfSections()
+  }
+  
+  func getSectionNameByIndex(section: Int) -> String {
+    return doGetSectionHeaderTitle(section)
+  }
+  
+  func getSectionRowsCountBySection(section: Int) -> Int {
+    return doGetRowsCountForSection(section)
+  }
+  
+  // MARK: - Internal
+  
+  enum RecordsCategory { case Today; case ThisWeek; case Erlier }
+  
+  func decodeRecordCategoryForSection(section: Int) -> RecordsCategory {
+    let todayRecordsCount = self.proxy.todayRecordsCount
+    let thisWeekRecordsCount = self.proxy.thisWeekRecordsCount
+    let erlierRecordsCount = self.proxy.erlierRecordsCount
+    switch section  {
+    case MasterViewController.TodayRecordsTableSectionIndex:
+      if todayRecordsCount > 0 { return .Today }
+      if thisWeekRecordsCount > 0 { return .ThisWeek }
+      if erlierRecordsCount > 0 { return .Erlier }
+      assert(false, "This method is coded in way it does not support cases when all sections are empty")
+    case MasterViewController.ThisWeekRecordsTableSectionIndex:
+      if todayRecordsCount > 0 {
+        if thisWeekRecordsCount > 0 {
+          return .ThisWeek
+        } else {
+          return .Erlier
+        }
+      } else {
+        // no today records
+        assert(erlierRecordsCount > 0)
+        return .Erlier
+      }
+    case MasterViewController.ErlierRecordsTableSectionIndex:
+      assert(erlierRecordsCount > 0)
+      return .Erlier
+    default:
+      assert(false)
     }
-    // TODO: Obvious improvement is having separate cache validity 
-    // indicator for mood cache and for creationData cache.
-    if old.mood != new.mood {
-      self.cacheValid = false
+  }
+  
+  func getDataRecordForIndexPath(indexPath: NSIndexPath) -> DiaryRecord {
+    let category = decodeRecordCategoryForSection(indexPath.section)
+    switch category {
+    case .Today: return self.proxy.getTodayRecordAtIndex(indexPath.row)
+    case .ThisWeek: return self.proxy.getThisWeelRecordAtIndex(indexPath.row)
+    case .Erlier: return self.proxy.getErlierRecordAtIndex(indexPath.row)
+    }
+  }
+  
+  func getDataRecordModelIdForIndexPath(indexPath: NSIndexPath) -> Int {
+    let category = decodeRecordCategoryForSection(indexPath.section)
+    switch category {
+    case .Today: return self.proxy.getModelRecordIdByTodayRecordIndex(indexPath.row)
+    case .ThisWeek: return self.proxy.getModelRecordIdByThisWeekRecordIndex(indexPath.row)
+    case .Erlier: return self.proxy.getModelRecordIdByErlierRecordIndex(indexPath.row)
+    }
+  }
+  
+  func doGetNumberOfSections() -> Int {
+    var sectionsCount = 0
+    if self.proxy.todayRecordsCount > 0 { sectionsCount += 1 }
+    if self.proxy.thisWeekRecordsCount > 0 { sectionsCount += 1 }
+    if self.proxy.erlierRecordsCount > 0 { sectionsCount += 1 }
+    return sectionsCount
+  }
+  
+  func doGetRowsCountForSection(section: Int) -> Int {
+    let category = decodeRecordCategoryForSection(section)
+    switch category {
+    case .Today:
+      return self.proxy.todayRecordsCount
+    case .ThisWeek:
+      return self.proxy.thisWeekRecordsCount
+    case .Erlier:
+      return self.proxy.erlierRecordsCount
+    }
+  }
+  
+  func doGetSectionHeaderTitle(section: Int) -> String {
+    let category = decodeRecordCategoryForSection(section)
+    switch category {
+    case .Today: return "Today"
+    case .ThisWeek: return "This Week"
+    case .Erlier: return "Erlier"
     }
   }
 }
 
+class MoodCategorizationDataModelProxy {
+  let proxy: DataModelUIProxy
 
+  init(proxy: DataModelUIProxy) {
+    self.proxy = proxy
+  }
+}
+
+class DataModelProxiesFactory {
+  static let proxy = DataModelUIProxy(dataModel: DataModel.sharedInstance)
+  
+  static func getCreationDateCategorizationDataModelProxy() -> CreationDateCategorizationDataModelProxy {
+    return CreationDateCategorizationDataModelProxy(proxy: self.proxy)
+  }
+  
+  static func getMoodCategirizationDataModelProxy() -> MoodCategorizationDataModelProxy {
+    return MoodCategorizationDataModelProxy(proxy: self.proxy)
+  }
+}
 

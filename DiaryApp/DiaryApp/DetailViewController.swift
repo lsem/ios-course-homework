@@ -30,7 +30,7 @@ class DetailViewController: UIViewController, UITextViewDelegate, UITextFieldDel
   
   var recordBeingEdited: DiaryRecord? { get {
       if self.recordModelId != -1 {
-        let record = DataModel.sharedInstance.retrieveDiaryRecordAt(index: recordModelId)
+        let record = DataModel.sharedInstance.retrieveDiaryRecordByID(recordModelId)
         return record
       }
       return nil
@@ -54,7 +54,7 @@ class DetailViewController: UIViewController, UITextViewDelegate, UITextFieldDel
   }
   
   func updateEditedDiaryRecord(updateCb: (DiaryRecord) -> Void) {
-    DataModel.sharedInstance.updateDiaryRecordAt(index: self.recordModelId,
+    DataModel.sharedInstance.updateDiaryRecorByID(self.recordModelId,
         updateCb: { (record: DiaryRecord) -> Void in
           updateCb(record)
     })

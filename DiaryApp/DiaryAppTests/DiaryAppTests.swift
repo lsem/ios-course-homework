@@ -164,21 +164,21 @@ class DiaryAppTests: XCTestCase {
       XCTAssert(dataModel.retrieveAllDiaryRecords().count == 0)
       XCTAssert(dataModel.recordsCount == 0)
       
-      dataModel.addDiaryRecord(DiaryRecord(name: "Sunday", text: "Good day", mood: RecordMood.Good))
+      let sundayRecordId = dataModel.addDiaryRecord(DiaryRecord(name: "Sunday", text: "Good day", mood: RecordMood.Good))
       
       XCTAssert(dataModel.recordsCount == 1)
 
       // TODO: Make it separete test with descriptive name
       // Verify getting data working and it is not destructive
-      XCTAssert(dataModel.retrieveAllDiaryRecords().count == 1)
-      XCTAssert(dataModel.retrieveAllDiaryRecords().count == 1)
-      XCTAssert(dataModel.retrieveAllDiaryRecords()[0].name == "Sunday")
-      XCTAssert(dataModel.retrieveAllDiaryRecords()[0].text == "Good day")
-      XCTAssert(dataModel.retrieveAllDiaryRecords()[0].mood == RecordMood.Good)
+      XCTAssert(dataModel.retrieveAllDiaryRecordValues().count == 1)
+      XCTAssert(dataModel.retrieveAllDiaryRecordValues().count == 1)
+      XCTAssert(dataModel.retrieveAllDiaryRecordValues()[0].name == "Sunday")
+      XCTAssert(dataModel.retrieveAllDiaryRecordValues()[0].text == "Good day")
+      XCTAssert(dataModel.retrieveAllDiaryRecordValues()[0].mood == RecordMood.Good)
      
       // TODO: Make it separete test with descriptive name
       // Verify removing data working
-      dataModel.removeDiaryRecordAt(index: 0)
+      dataModel.removeDiaryRecordByID(sundayRecordId)
       XCTAssert(dataModel.recordsCount == 0)
       XCTAssert(dataModel.retrieveAllDiaryRecords().count == 0)
     }
@@ -230,8 +230,8 @@ class DiaryAppTests: XCTestCase {
     var passesLeft = 2
     while passesLeft-- != 0 {
       
-      dataModel.addDiaryRecord(DiaryRecord(name: "Sunday", text: "Good day", mood: RecordMood.Good))
-      dataModel.addDiaryRecord(DiaryRecord(name: "Monday", text: "Another Good day", mood: RecordMood.Good))
+      let sundayRecordId = dataModel.addDiaryRecord(DiaryRecord(name: "Sunday", text: "Good day", mood: RecordMood.Good))
+      let mondayRecordId = dataModel.addDiaryRecord(DiaryRecord(name: "Monday", text: "Another Good day", mood: RecordMood.Good))
 
       XCTAssert(dataModelProxy.retrieveErlierRecords().count == 0)
       XCTAssert(dataModelProxy.retrieveTheseWeekRecords().count == 0)
@@ -244,14 +244,15 @@ class DiaryAppTests: XCTestCase {
       XCTAssert(dateOrderedIndex[1].name == "Monday")
       
       // Lets change record date to some erlier equialent (more then 7 days back)
-      dataModel.updateDiaryRecordAt(index: 1) { (record: DiaryRecord) in
+      dataModel.updateDiaryRecorByID(mondayRecordId) { (record: DiaryRecord) in
         record.creationDate = DiaryAppTests.dateWithDaysAdded(record.creationDate, days: -10)
       };
 
       XCTAssert(dataModelProxy.retrieveErlierRecords().count == 1)
       XCTAssert(dataModelProxy.retrieveTheseWeekRecords().count == 0)
       XCTAssert(dataModelProxy.retrieveTodayRecords().count == 1)
-      XCTAssert(dataModelProxy.retrieveAllRecordsSortedByCreationDate().count == 2)
+      let sorted = dataModelProxy.retrieveAllRecordsSortedByCreationDate()
+      XCTAssert(sorted.count == 2)
       let dateOrderedIndexAftedUpdated = dataModelProxy.retrieveAllRecordsSortedByCreationDate()
       XCTAssert(dataModelProxy.retrieveTodayRecords()[0].name == "Sunday")
       XCTAssert(dataModelProxy.retrieveErlierRecords()[0].name == "Monday")
@@ -259,7 +260,7 @@ class DiaryAppTests: XCTestCase {
       XCTAssert(dateOrderedIndexAftedUpdated[1].name == "Sunday")
 
       // Lets change record date to some erlier equialent (more then 7 days back)
-      dataModel.updateDiaryRecordAt(index: 1) { (record: DiaryRecord) in
+      dataModel.updateDiaryRecorByID(mondayRecordId) { (record: DiaryRecord) in
         record.creationDate = DiaryAppTests.dateWithDaysAdded(record.creationDate, days: +10)
       };
       
@@ -273,8 +274,9 @@ class DiaryAppTests: XCTestCase {
       XCTAssert(dateOrderedIndexAftertTwoUpdates[0].name == "Sunday")
       XCTAssert(dateOrderedIndexAftertTwoUpdates[1].name == "Monday")
       
+
       // Remove test
-      dataModel.removeDiaryRecordAt(index: 0) // remove Sunday's record
+      dataModel.removeDiaryRecordByID(sundayRecordId) // remove Sunday's record
       XCTAssert(dataModelProxy.retrieveErlierRecords().count == 0)
       XCTAssert(dataModelProxy.retrieveTheseWeekRecords().count == 0)
       XCTAssert(dataModelProxy.retrieveTodayRecords().count == 1)
@@ -283,7 +285,7 @@ class DiaryAppTests: XCTestCase {
       XCTAssert(dataModelProxy.retrieveTodayRecords()[0].name == "Monday")
       XCTAssert(dateOrderedIndexAftertRemove[0].name == "Monday")
       // Remove latest
-      dataModel.removeDiaryRecordAt(index: 0) // remove Sunday's record
+      dataModel.removeDiaryRecordByID(mondayRecordId) // remove Mondays record
       XCTAssert(dataModelProxy.retrieveErlierRecords().count == 0)
       XCTAssert(dataModelProxy.retrieveTheseWeekRecords().count == 0)
       XCTAssert(dataModelProxy.retrieveTodayRecords().count == 0)
@@ -303,7 +305,7 @@ class DiaryAppTests: XCTestCase {
     XCTAssert(dataModelProxy.getModelRecordIdByTodayRecordIndex(1) == 1)
 
     // After this monday should left todays group but data index should be the same
-    dataModel.updateDiaryRecordAt(index: 1) { (record: DiaryRecord) in
+    dataModel.updateDiaryRecorByID(1) { (record: DiaryRecord) in
       record.creationDate = DiaryAppTests.dateWithDaysAdded(record.creationDate, days: -10)
     };
 
@@ -361,13 +363,13 @@ class DiaryAppTests: XCTestCase {
     for _ in 0..<count {
       let modelId = dataModelProxy.getModelRecordByMoodOrderedIndex(.Neutral, index: 0)
       NSLog("removing : \(modelId)")
-      dataModel.removeDiaryRecordAt(index: modelId)
+      dataModel.removeDiaryRecordByID(modelId)
     }
     // And insert one
     dataModel.addDiaryRecord(DiaryRecord(name: "Saturday", text: "Another Good day", mood: RecordMood.NoSet))
     // And update one
     let firstGoodRecordModelIndex = dataModelProxy.getModelRecordByMoodOrderedIndex(.Good, index: 0)
-    dataModel.updateDiaryRecordAt(index: firstGoodRecordModelIndex) {
+    dataModel.updateDiaryRecorByID(firstGoodRecordModelIndex) {
       $0.mood = RecordMood.Bad
     }
     XCTAssert(dataModelProxy.getRecordsCountForMood(.Good) == 1)

@@ -243,7 +243,7 @@ class MasterViewController: UITableViewController {
     if editingStyle == .Delete {
       let wasItLastSection = isSectionAboutToBeEmpty(indexPath.section)
       let recordId = getDataRecordModelIdForIndexPath(indexPath)
-      DataModel.sharedInstance.removeDiaryRecordAt(index: recordId)
+      DataModel.sharedInstance.removeDiaryRecordByID(recordId)
       if wasItLastSection {
         let indexset = NSIndexSet(index: indexPath.section)
         tableView.deleteSections(indexset, withRowAnimation: .Fade)

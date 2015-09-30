@@ -69,12 +69,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
   
   func storeDataIfNecessary() {
     let allDiaryRecords = DataModel.sharedInstance.retrieveAllDiaryRecords()
-    self.repository.storeDiaryRecordCollection(allDiaryRecords)
+    let allDiaryRecordsArray = Array<DiaryRecord>(allDiaryRecords.values)
+    self.repository.storeDiaryRecordCollection(allDiaryRecordsArray)
   }
   
   func loadDataIfThereAreAny() {
     if let loadedData = self.repository.loadDiaryRecordCollection() {
-      DataModel.sharedInstance.initFromArray(loadedData)
+      let dataModel = DataModel.sharedInstance
+      dataModel.initFromArray(loadedData)
     } else {
       // It could be either due to failed initialization or because of first run.
       // Lets initialize with some hard coded.
