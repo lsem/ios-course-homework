@@ -191,14 +191,17 @@ class MasterViewController: UITableViewController, CreationDateCategorizationDat
   
   func sectionDestroyed(sectionIndex: Int) -> Void {
     NSLog("sectionDestroyed(\(sectionIndex))")
-    let indexset = NSIndexSet(index: sectionIndex)
-    self.tableView.deleteSections(indexset, withRowAnimation: .Fade)
   }
-  
-  func rowDeleted(section: Int, row: Int) -> Void {
+
+  func rowDeleted(section: Int, row: Int, lastRecord: Bool) -> Void {
     NSLog("rowDeleted(\(section), \(row))")
-    let indexPath = NSIndexPath(forRow: row, inSection: section)
-    tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+    if lastRecord {
+      let indexset = NSIndexSet(index: section)
+      self.tableView.deleteSections(indexset, withRowAnimation: .Fade)
+    } else {
+      let indexPath = NSIndexPath(forRow: row, inSection: section)
+      tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+    }
   }
   
   func rowInserted(section: Int, row: Int) -> Void {

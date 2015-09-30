@@ -450,7 +450,7 @@ class DiaryAppTests: XCTestCase {
       self.sectionsDestroyedCount += 1
     }
     
-    func rowDeleted(section: Int, row: Int) -> Void {
+    func rowDeleted(section: Int, row: Int, lastRecord: Bool) -> Void {
       self.events.append(ModelViewEvent.RowDeleted(section, row))
       self.rowsDeletedCount += 1
     }

@@ -446,7 +446,7 @@ class DataModelUIProxy : DataModelDelegate {
 protocol CreationDateCategorizationDataModelProxyDelegate : class {
   func sectionCreated(sectionIndex: Int) -> Void
   func sectionDestroyed(sectionIndex: Int) -> Void
-  func rowDeleted(section: Int, row: Int) -> Void
+  func rowDeleted(section: Int, row: Int, lastRecord: Bool) -> Void
   func rowInserted(section: Int, row: Int) -> Void
   func rowUpdated(section: Int, row: Int) -> Void
 }
@@ -493,7 +493,7 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
   typealias SectionAddedCB = (section: Int) -> Void
   typealias SectionRemovedCB = (section: Int) -> Void
   typealias RowInsertedCB = (section: Int, row: Int) -> Void
-  typealias RowRemovedCB = (section: Int, row: Int) -> Void
+  typealias RowRemovedCB = (section: Int, row: Int, lastRecord: Bool) -> Void
   
   func compareTableInfos(a a: TableInfo, b: TableInfo, sectionAdded: SectionAddedCB,
       sectionRemoved: SectionRemovedCB, rowInserted: RowInsertedCB, rowRemoved: RowRemovedCB) {
@@ -524,10 +524,8 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
           // Check if we are going to remove last row and if so,
           // do not do this due to the fact, that this code serves to UITableView which in our case
           // requires to remove section instead of last row and then section. In etiher case, we will have a crash.
-          if rowIdx == wasRowsInSection - 1 {
-            break
-          }
-          rowRemoved(section: sectionIdx, row: rowIdx)
+          let lastRecord = rowIdx == wasRowsInSection - 1
+          rowRemoved(section: sectionIdx, row: rowIdx, lastRecord: lastRecord)
         }
         sectionRemoved(section: sectionIdx)
         foundDiffs = true
@@ -568,7 +566,7 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
     for (modelId, rowRec) in a_rows_hash  {
       if b_rows_hash[modelId] == nil {
         let position = rowRec.0
-        rowRemoved(section: section, row: position)
+        rowRemoved(section: section, row: position, lastRecord: false)
       }
       b_rows_hash.removeValueForKey(modelId)
     }
@@ -603,7 +601,7 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
       sectionAdded: { (section: Int) in self.notifySectionCreated(section) },
       sectionRemoved: { (section: Int) in self.notifySectionDestroyed(section) },
       rowInserted: { (section: Int, row: Int) in self.notifyRowInserted(section, row: row) },
-      rowRemoved: { (section: Int, row: Int) in self.notifyRowDeleted(section, row: row) }
+      rowRemoved: { (section: Int, row: Int, lastRecord: Bool) in self.notifyRowDeleted(section, row: row, lastRecord: lastRecord) }
     )
     self.currentTableInfo = latestTableInfo
   }
@@ -634,9 +632,9 @@ class CreationDateCategorizationDataModelProxy: DataModelUIProxyDelegate {
     }
   }
   
-  func notifyRowDeleted(section: Int, row: Int) {
+  func notifyRowDeleted(section: Int, row: Int, lastRecord: Bool) {
     if self.delegate != nil {
-      self.delegate?.rowDeleted(section, row: row)
+      self.delegate?.rowDeleted(section, row: row, lastRecord: lastRecord)
     }
   }
   
