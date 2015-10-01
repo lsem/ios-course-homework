@@ -23,27 +23,7 @@ protocol IDiaryRecordsRepository {
 // TODO: Make Error Handling
 // Repository for persisting application data to local filesystem
 class SystemKeyArchiverUnarchiverRepository : IDiaryRecordsRepository {
-  var storeFileFileSystemPath: String = SystemKeyArchiverUnarchiverRepository.allRecordsCollectionFilePath()
-  
-  static func getDocumentsDirectoryPath() -> String {
-    let paths = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory,
-      NSSearchPathDomainMask.UserDomainMask, true)
-    assert(!paths.isEmpty)
-    let documentsPath = paths.first!
-    return documentsPath
-  }
-
-  static func allRecordsCollectionFilePath() -> String {
-    let docsPathNS = NSString(string: SystemKeyArchiverUnarchiverRepository.getDocumentsDirectoryPath())
-    let completePath = docsPathNS.stringByAppendingPathComponent("allDiaryRecordsCollection.archive")
-    return completePath
-  }
-  
-  static func allRecordsCollectionFileTestsPath() -> String {
-    let docsPathNS = NSString(string: SystemKeyArchiverUnarchiverRepository.getDocumentsDirectoryPath())
-    let completePath = docsPathNS.stringByAppendingPathComponent("allDiaryRecordsCollection_tests.archive")
-    return completePath
-  }
+  private var storeFileFileSystemPath: String = SystemKeyArchiverUnarchiverRepository.allRecordsCollectionFilePath()
 
   // The parameter forTests is an ad-hoc solution to adress the problem
   // that after renunning unit tests, data written during the test is left.
@@ -84,6 +64,28 @@ class SystemKeyArchiverUnarchiverRepository : IDiaryRecordsRepository {
     } catch _ {
       NSLog("ERROR: Failed removing data file")
     }
+  }
+  
+  // MARK: - Private
+  
+  private static func getDocumentsDirectoryPath() -> String {
+    let paths = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory,
+      NSSearchPathDomainMask.UserDomainMask, true)
+    assert(!paths.isEmpty)
+    let documentsPath = paths.first!
+    return documentsPath
+  }
+  
+  private static func allRecordsCollectionFilePath() -> String {
+    let docsPathNS = NSString(string: SystemKeyArchiverUnarchiverRepository.getDocumentsDirectoryPath())
+    let completePath = docsPathNS.stringByAppendingPathComponent("allDiaryRecordsCollection.archive")
+    return completePath
+  }
+  
+  private static func allRecordsCollectionFileTestsPath() -> String {
+    let docsPathNS = NSString(string: SystemKeyArchiverUnarchiverRepository.getDocumentsDirectoryPath())
+    let completePath = docsPathNS.stringByAppendingPathComponent("allDiaryRecordsCollection_tests.archive")
+    return completePath
   }
   
 }
