@@ -9,17 +9,18 @@
 import UIKit
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate {
+  
   
   var window: UIWindow?
   var masterViewController: MasterViewController?
   let repository = SystemKeyArchiverUnarchiverRepository()
+//  var pageViewController: PageViewController? = nil
   
   func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
     loadApplicationConfiguration()
     loadDataIfThereAreAny()
     becomeDetailViewControllerDelegate()
-    resolveMasterViewController()
     return true
   }
   
@@ -34,13 +35,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     let splitViewController = self.window!.rootViewController as! UISplitViewController
     let masterNavigationController = splitViewController.viewControllers[0] as! UINavigationController
     self.masterViewController = masterNavigationController.viewControllers[0] as? MasterViewController
+    
+    
   }
   
   func becomeDetailViewControllerDelegate() {
-    let splitViewController = self.window!.rootViewController as! UISplitViewController
-    let navigationController = splitViewController.viewControllers[splitViewController.viewControllers.count-1] as! UINavigationController
-    navigationController.topViewController!.navigationItem.leftBarButtonItem = splitViewController.displayModeButtonItem()
-    splitViewController.delegate = self
+//    let splitViewController = self.window!.rootViewController as! UISplitViewController
+//    let navigationController = splitViewController.viewControllers[splitViewController.viewControllers.count-1] as! UINavigationController
+//    navigationController.topViewController!.navigationItem.leftBarButtonItem = splitViewController.displayModeButtonItem()
+//    splitViewController.delegate = self
   }
   
   func applicationWillResignActive(application: UIApplication) {

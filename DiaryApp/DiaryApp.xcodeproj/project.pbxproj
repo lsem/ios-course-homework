@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		5F2FA01D1BB7632F00ECF182 /* DataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F2FA01C1BB7632F00ECF182 /* DataModel.swift */; settings = {ASSET_TAGS = (); }; };
+		5F5F80431BBD31A50003233A /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F5F80421BBD31A50003233A /* RootViewController.swift */; settings = {ASSET_TAGS = (); }; };
 		5F658EC51BBC6F5F0094C58B /* CreationDateCategorizationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F658EC41BBC6F5F0094C58B /* CreationDateCategorizationViewModel.swift */; settings = {ASSET_TAGS = (); }; };
 		5F658EC71BBC70770094C58B /* DataModelIndexingProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F658EC61BBC70770094C58B /* DataModelIndexingProxy.swift */; settings = {ASSET_TAGS = (); }; };
 		5F658EC91BBC72E60094C58B /* MoodCategorizationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F658EC81BBC72E60094C58B /* MoodCategorizationViewModel.swift */; settings = {ASSET_TAGS = (); }; };
@@ -21,6 +22,7 @@
 		5F81169B1BAEABEC00991688 /* DiaryAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F81169A1BAEABEC00991688 /* DiaryAppTests.swift */; };
 		5F8116A61BAEABEC00991688 /* DiaryAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8116A51BAEABEC00991688 /* DiaryAppUITests.swift */; };
 		5F8116B41BAED98500991688 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8116B31BAED98500991688 /* SettingsViewController.swift */; settings = {ASSET_TAGS = (); }; };
+		5F83CC6F1BBD1B6300AD6586 /* PageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F83CC6E1BBD1B6300AD6586 /* PageViewController.swift */; settings = {ASSET_TAGS = (); }; };
 		5F8F68E01BB0686F006A63AB /* DiaryRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8F68DF1BB0686F006A63AB /* DiaryRecord.swift */; settings = {ASSET_TAGS = (); }; };
 		5F8F68E21BB18258006A63AB /* MoodSelectionSegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8F68E11BB18258006A63AB /* MoodSelectionSegmentedControl.swift */; settings = {ASSET_TAGS = (); }; };
 		5F8F68E61BB1B20B006A63AB /* DiaryRecordFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8F68E51BB1B20B006A63AB /* DiaryRecordFormatter.swift */; settings = {ASSET_TAGS = (); }; };
@@ -53,6 +55,7 @@
 
 /* Begin PBXFileReference section */
 		5F2FA01C1BB7632F00ECF182 /* DataModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataModel.swift; sourceTree = "<group>"; };
+		5F5F80421BBD31A50003233A /* RootViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
 		5F658EC41BBC6F5F0094C58B /* CreationDateCategorizationViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreationDateCategorizationViewModel.swift; sourceTree = "<group>"; };
 		5F658EC61BBC70770094C58B /* DataModelIndexingProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataModelIndexingProxy.swift; sourceTree = "<group>"; };
 		5F658EC81BBC72E60094C58B /* MoodCategorizationViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MoodCategorizationViewModel.swift; sourceTree = "<group>"; };
@@ -72,6 +75,7 @@
 		5F8116A51BAEABEC00991688 /* DiaryAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiaryAppUITests.swift; sourceTree = "<group>"; };
 		5F8116A71BAEABEC00991688 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5F8116B31BAED98500991688 /* SettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
+		5F83CC6E1BBD1B6300AD6586 /* PageViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PageViewController.swift; sourceTree = "<group>"; };
 		5F8F68DF1BB0686F006A63AB /* DiaryRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiaryRecord.swift; sourceTree = "<group>"; };
 		5F8F68E11BB18258006A63AB /* MoodSelectionSegmentedControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MoodSelectionSegmentedControl.swift; sourceTree = "<group>"; };
 		5F8F68E51BB1B20B006A63AB /* DiaryRecordFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiaryRecordFormatter.swift; sourceTree = "<group>"; };
@@ -155,6 +159,8 @@
 				5F658EC61BBC70770094C58B /* DataModelIndexingProxy.swift */,
 				5F658EC81BBC72E60094C58B /* MoodCategorizationViewModel.swift */,
 				5F658ECA1BBC73450094C58B /* ViewModelsFactory.swift */,
+				5F83CC6E1BBD1B6300AD6586 /* PageViewController.swift */,
+				5F5F80421BBD31A50003233A /* RootViewController.swift */,
 			);
 			path = DiaryApp;
 			sourceTree = "<group>";
@@ -329,11 +335,13 @@
 				5F8F68E01BB0686F006A63AB /* DiaryRecord.swift in Sources */,
 				5F658EC91BBC72E60094C58B /* MoodCategorizationViewModel.swift in Sources */,
 				5F8116841BAEABEC00991688 /* AppDelegate.swift in Sources */,
+				5F83CC6F1BBD1B6300AD6586 /* PageViewController.swift in Sources */,
 				5F2FA01D1BB7632F00ECF182 /* DataModel.swift in Sources */,
 				5FED7B8A1BB2D8C7001F2D90 /* ApplicationSettingsExtensions.swift in Sources */,
 				5FCD906C1BB971490053339C /* DateEditViewController.swift in Sources */,
 				5F8F68E21BB18258006A63AB /* MoodSelectionSegmentedControl.swift in Sources */,
 				5FC06ADB1BB6EF9F00981AE2 /* TableViewCell.swift in Sources */,
+				5F5F80431BBD31A50003233A /* RootViewController.swift in Sources */,
 				5F658EC71BBC70770094C58B /* DataModelIndexingProxy.swift in Sources */,
 				5F8116B41BAED98500991688 /* SettingsViewController.swift in Sources */,
 				5FED7B861BB2AB50001F2D90 /* ApplicationSettings.swift in Sources */,

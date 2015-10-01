@@ -66,10 +66,10 @@ class MasterViewController: UITableViewController, CreationDateCategorizationVie
   func createNewRecordButton() {
     let addButton = UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: "insertNewObject:")
     self.navigationItem.rightBarButtonItem = addButton
-    if let split = self.splitViewController {
-      let controllers = split.viewControllers
-      self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
-    }
+//    if let split = self.splitViewController {
+//      let controllers = split.viewControllers
+//      self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
+//    }
   }
   
   func configureApp(sender: AnyObject) {
@@ -77,7 +77,7 @@ class MasterViewController: UITableViewController, CreationDateCategorizationVie
   }
   
   override func viewWillAppear(animated: Bool) {
-    self.clearsSelectionOnViewWillAppear = self.splitViewController!.collapsed
+//    self.clearsSelectionOnViewWillAppear = self.splitViewController!.collapsed
     super.viewWillAppear(animated)
     reloadTableData()
   }
@@ -106,7 +106,7 @@ class MasterViewController: UITableViewController, CreationDateCategorizationVie
         // Assign detail a record id and let it update itself, 
         // if something interesting will happen with it, we should be notified via viewmodel protocol.
         detailController.recordId = recordId
-        detailController.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
+//        detailController.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
         detailController.navigationItem.leftItemsSupplementBackButton = true
       }
     } else if segue.identifier == "showSettings" {

@@ -18,7 +18,6 @@ protocol IDiaryRecordsRepository {
   func purgeAllData()
 }
 
-
 ////////////////////////////////////////////////////////////
 // TODO: Make Error Handling
 // Repository for persisting application data to local filesystem
