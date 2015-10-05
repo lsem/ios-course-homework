@@ -8,7 +8,7 @@
 
 import UIKit
 
-class MasterViewController: UITableViewController, CreationDateCategorizationViewModelDelegate {
+class DateCategorizationTableViewController: UITableViewController, CreationDateCategorizationViewModelDelegate {
 
   static let TodayRecordsTableSectionIndex = 0
   static let ThisWeekRecordsTableSectionIndex = 1
@@ -23,6 +23,11 @@ class MasterViewController: UITableViewController, CreationDateCategorizationVie
   @IBAction func unwindToContainerVC(segue: UIStoryboardSegue) {
     // This is called on unwidning from settings view controller to this view controller
     acceptApplicationSettingsChangeIfNecessary()
+  }
+  
+  @IBAction func returnFromRecordEditing(segue: UIStoryboardSegue) {
+    NSLog("Returned from date editing")
+    reloadTableData()
   }
   
   override func viewDidLoad() {
@@ -66,10 +71,10 @@ class MasterViewController: UITableViewController, CreationDateCategorizationVie
   func createNewRecordButton() {
     let addButton = UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: "insertNewObject:")
     self.navigationItem.rightBarButtonItem = addButton
-    if let split = self.splitViewController {
-      let controllers = split.viewControllers
-      self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
-    }
+//    if let split = self.splitViewController {
+//      let controllers = split.viewControllers
+//      self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
+//    }
   }
   
   func configureApp(sender: AnyObject) {
@@ -77,7 +82,7 @@ class MasterViewController: UITableViewController, CreationDateCategorizationVie
   }
   
   override func viewWillAppear(animated: Bool) {
-    self.clearsSelectionOnViewWillAppear = self.splitViewController!.collapsed
+//    self.clearsSelectionOnViewWillAppear = self.splitViewController!.collapsed
     super.viewWillAppear(animated)
     reloadTableData()
   }
@@ -106,8 +111,7 @@ class MasterViewController: UITableViewController, CreationDateCategorizationVie
         // Assign detail a record id and let it update itself, 
         // if something interesting will happen with it, we should be notified via viewmodel protocol.
         detailController.recordId = recordId
-        detailController.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
-        detailController.navigationItem.leftItemsSupplementBackButton = true
+        //detailController.navigationItem.leftItemsSupplementBackButton = true
       }
     } else if segue.identifier == "showSettings" {
       let settingsNavigationController = (segue.destinationViewController as! UINavigationController).topViewController
@@ -194,11 +198,12 @@ class MasterViewController: UITableViewController, CreationDateCategorizationVie
   }
 
   func rowDeleted(section: Int, row: Int, lastRecord: Bool) -> Void {
-    NSLog("rowDeleted(\(section), \(row))")
     if lastRecord {
+    NSLog("Last row deleted: (\(section), \(row))")
       let indexset = NSIndexSet(index: section)
       self.tableView.deleteSections(indexset, withRowAnimation: .Fade)
     } else {
+      NSLog("Row deleted: (\(section), \(row))")
       let indexPath = NSIndexPath(forRow: row, inSection: section)
       tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
     }

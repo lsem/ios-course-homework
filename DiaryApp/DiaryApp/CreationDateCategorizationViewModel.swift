@@ -228,12 +228,12 @@ class CreationDateCategorizationViewModel: DataModelIndexingProxyDelegate {
     let thisWeekRecordsCount = self.proxy.thisWeekRecordsCount
     let erlierRecordsCount = self.proxy.erlierRecordsCount
     switch section  {
-    case MasterViewController.TodayRecordsTableSectionIndex:
+    case DateCategorizationTableViewController.TodayRecordsTableSectionIndex:
       if todayRecordsCount > 0 { return .Today }
       if thisWeekRecordsCount > 0 { return .ThisWeek }
       if erlierRecordsCount > 0 { return .Erlier }
       assert(false, "This method is coded in way it does not support cases when all sections are empty")
-    case MasterViewController.ThisWeekRecordsTableSectionIndex:
+    case DateCategorizationTableViewController.ThisWeekRecordsTableSectionIndex:
       if todayRecordsCount > 0 {
         if thisWeekRecordsCount > 0 {
           return .ThisWeek
@@ -245,7 +245,7 @@ class CreationDateCategorizationViewModel: DataModelIndexingProxyDelegate {
         assert(erlierRecordsCount > 0)
         return .Erlier
       }
-    case MasterViewController.ErlierRecordsTableSectionIndex:
+    case DateCategorizationTableViewController.ErlierRecordsTableSectionIndex:
       assert(erlierRecordsCount > 0)
       return .Erlier
     default:

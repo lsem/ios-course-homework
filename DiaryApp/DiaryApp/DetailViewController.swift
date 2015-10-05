@@ -50,6 +50,8 @@ class DetailViewController: UIViewController, UITextViewDelegate, UITextFieldDel
           }
         }
       }
+    } else if segue.identifier == "ReturnFromDateEditingSegue" {
+      NSLog("Starting ReturnFromDateEditingSegue segue")
     }
   }
   

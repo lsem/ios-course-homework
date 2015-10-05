@@ -8,12 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		5F2FA01D1BB7632F00ECF182 /* DataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F2FA01C1BB7632F00ECF182 /* DataModel.swift */; settings = {ASSET_TAGS = (); }; };
+		5F329BFD1BBD8BEC00EABD81 /* MoodCategorizedRootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F329BFC1BBD8BEC00EABD81 /* MoodCategorizedRootViewController.swift */; settings = {ASSET_TAGS = (); }; };
 		5F658EC51BBC6F5F0094C58B /* CreationDateCategorizationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F658EC41BBC6F5F0094C58B /* CreationDateCategorizationViewModel.swift */; settings = {ASSET_TAGS = (); }; };
 		5F658EC71BBC70770094C58B /* DataModelIndexingProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F658EC61BBC70770094C58B /* DataModelIndexingProxy.swift */; settings = {ASSET_TAGS = (); }; };
 		5F658EC91BBC72E60094C58B /* MoodCategorizationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F658EC81BBC72E60094C58B /* MoodCategorizationViewModel.swift */; settings = {ASSET_TAGS = (); }; };
 		5F658ECB1BBC73450094C58B /* ViewModelsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F658ECA1BBC73450094C58B /* ViewModelsFactory.swift */; settings = {ASSET_TAGS = (); }; };
 		5F8116841BAEABEC00991688 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8116831BAEABEC00991688 /* AppDelegate.swift */; };
-		5F8116861BAEABEC00991688 /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8116851BAEABEC00991688 /* MasterViewController.swift */; };
+		5F8116861BAEABEC00991688 /* DateCategorizationTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8116851BAEABEC00991688 /* DateCategorizationTableViewController.swift */; };
 		5F8116881BAEABEC00991688 /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8116871BAEABEC00991688 /* DetailViewController.swift */; };
 		5F81168B1BAEABEC00991688 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5F8116891BAEABEC00991688 /* Main.storyboard */; };
 		5F81168D1BAEABEC00991688 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5F81168C1BAEABEC00991688 /* Assets.xcassets */; };
@@ -53,13 +54,14 @@
 
 /* Begin PBXFileReference section */
 		5F2FA01C1BB7632F00ECF182 /* DataModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataModel.swift; sourceTree = "<group>"; };
+		5F329BFC1BBD8BEC00EABD81 /* MoodCategorizedRootViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MoodCategorizedRootViewController.swift; sourceTree = "<group>"; };
 		5F658EC41BBC6F5F0094C58B /* CreationDateCategorizationViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreationDateCategorizationViewModel.swift; sourceTree = "<group>"; };
 		5F658EC61BBC70770094C58B /* DataModelIndexingProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataModelIndexingProxy.swift; sourceTree = "<group>"; };
 		5F658EC81BBC72E60094C58B /* MoodCategorizationViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MoodCategorizationViewModel.swift; sourceTree = "<group>"; };
 		5F658ECA1BBC73450094C58B /* ViewModelsFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewModelsFactory.swift; sourceTree = "<group>"; };
 		5F8116801BAEABEC00991688 /* DiaryApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DiaryApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F8116831BAEABEC00991688 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		5F8116851BAEABEC00991688 /* MasterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterViewController.swift; sourceTree = "<group>"; };
+		5F8116851BAEABEC00991688 /* DateCategorizationTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateCategorizationTableViewController.swift; sourceTree = "<group>"; };
 		5F8116871BAEABEC00991688 /* DetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
 		5F81168A1BAEABEC00991688 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		5F81168C1BAEABEC00991688 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -135,7 +137,7 @@
 			children = (
 				5F8F68E91BB1E14B006A63AB /* Services */,
 				5F8116831BAEABEC00991688 /* AppDelegate.swift */,
-				5F8116851BAEABEC00991688 /* MasterViewController.swift */,
+				5F8116851BAEABEC00991688 /* DateCategorizationTableViewController.swift */,
 				5F8116871BAEABEC00991688 /* DetailViewController.swift */,
 				5F8116891BAEABEC00991688 /* Main.storyboard */,
 				5F81168C1BAEABEC00991688 /* Assets.xcassets */,
@@ -155,6 +157,7 @@
 				5F658EC61BBC70770094C58B /* DataModelIndexingProxy.swift */,
 				5F658EC81BBC72E60094C58B /* MoodCategorizationViewModel.swift */,
 				5F658ECA1BBC73450094C58B /* ViewModelsFactory.swift */,
+				5F329BFC1BBD8BEC00EABD81 /* MoodCategorizedRootViewController.swift */,
 			);
 			path = DiaryApp;
 			sourceTree = "<group>";
@@ -254,6 +257,7 @@
 				TargetAttributes = {
 					5F81167F1BAEABEC00991688 = {
 						CreatedOnToolsVersion = 7.0;
+						DevelopmentTeam = 52924C3JKP;
 					};
 					5F8116951BAEABEC00991688 = {
 						CreatedOnToolsVersion = 7.0;
@@ -319,12 +323,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				5F8116881BAEABEC00991688 /* DetailViewController.swift in Sources */,
+				5F329BFD1BBD8BEC00EABD81 /* MoodCategorizedRootViewController.swift in Sources */,
 				5F9F70921BB82946007888ED /* NSDateComparisonExtension.swift in Sources */,
 				5F8F68E61BB1B20B006A63AB /* DiaryRecordFormatter.swift in Sources */,
 				5F658ECB1BBC73450094C58B /* ViewModelsFactory.swift in Sources */,
 				5FED7B881BB2D056001F2D90 /* DiaryRecordFormatterExtensions.swift in Sources */,
 				5F8F68E81BB1CFE1006A63AB /* DiaryRecordsRepository.swift in Sources */,
-				5F8116861BAEABEC00991688 /* MasterViewController.swift in Sources */,
+				5F8116861BAEABEC00991688 /* DateCategorizationTableViewController.swift in Sources */,
 				5F658EC51BBC6F5F0094C58B /* CreationDateCategorizationViewModel.swift in Sources */,
 				5F8F68E01BB0686F006A63AB /* DiaryRecord.swift in Sources */,
 				5F658EC91BBC72E60094C58B /* MoodCategorizationViewModel.swift in Sources */,
@@ -476,10 +481,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = DiaryApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.lsem.DiaryApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Debug;
 		};
@@ -487,10 +496,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = DiaryApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.lsem.DiaryApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Release;
 		};
